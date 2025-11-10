@@ -84,6 +84,22 @@
     </div>
   </div>
 
+  
+    <div class="card">
+      <div>📝 Назначено КП: <span id="kpset">0</span></div>
+      <div class="buttons">
+        <button onclick="change('kpset', 1)">+ Назначено</button>
+        <button onclick="change('kpset', -1)">– Назначено</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📨 Проведено КП: <span id="kpsent">0</span></div>
+      <div class="buttons">
+        <button onclick="change('kpsent', 1)">+ Проведено</button>
+        <button onclick="change('kpsent', -1)">– Проведено</button>
+      </div>
+    </div>
+
   <div class="chart-container">
     <canvas id="activityChart"></canvas>
   </div>
@@ -94,6 +110,8 @@
     document.getElementById("username").textContent = user;
 
     let data = {
+      kpset: 0,
+      kpsent: 0,
       calls: 0,
       reached: 0,
       meetings: 0,
@@ -106,10 +124,10 @@
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ["Звонки", "Дозвоны", "Встречи", "Назначено"],
+        labels: ["Звонки", "Дозвоны", "Встречи", "Назначено", "КП Назначено", "КП Проведено"],
         datasets: [{
           label: 'Текущие значения',
-          data: [0, 0, 0, 0],
+          data: [0, 0, 0, 0, 0, 0],
           backgroundColor: '#933DC9'
         }]
       },
@@ -149,6 +167,8 @@
     }
 
     function update() {
+      document.getElementById('kpset').textContent = data.kpset;
+      document.getElementById('kpsent').textContent = data.kpsent;
       document.getElementById("calls").textContent = data.calls;
       document.getElementById("reached").textContent = data.reached;
       document.getElementById("meetings").textContent = data.meetings;
@@ -157,7 +177,7 @@
       document.getElementById("reachedGoal").textContent = data.reachedGoal;
 
       chart.data.datasets[0].data = [
-        data.calls, data.reached, data.meetings, data.scheduled
+        data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
       ];
       chart.update();
     }
