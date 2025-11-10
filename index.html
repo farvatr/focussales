@@ -312,5 +312,17 @@ async function loadAnalytics() {
 window.loadAnalytics = loadAnalytics;
 </script>
 
+
+<script>
+function setValue(metric, val) {
+  val = parseInt(val);
+  if (!isNaN(val)) {
+    data[metric] = Math.max(0, val);
+    adjustGoals();
+    update();
+  }
+}
+</script>
+
 </body>
 </html>
