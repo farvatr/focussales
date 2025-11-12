@@ -66,7 +66,14 @@ function applyInput(metric) {
     Добро пожаловать, <span id="username"></span>!
   </div>
 
-  <div class="metrics">
+  
+<div style="margin-bottom: 1rem;">
+  <button onclick="showTab('main')" style="margin-right:10px;">Сегодня</button>
+  <button onclick="showTab('analytics')">Аналитика</button>
+</div>
+
+<div id="mainTab">
+<div class="metrics">
     <div class="card">
       <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
       
@@ -143,7 +150,28 @@ function applyInput(metric) {
     </div>
     </div>
 
-  <div class="chart-container">
+  
+</div>
+<div id="analyticsTab" style="display:none;">
+  <h2>📊 Аналитика</h2>
+  <div style="margin-bottom:1rem;">
+    Период:
+    <label><input type="radio" name="period" value="day" checked> День</label>
+    <label><input type="radio" name="period" value="week"> Неделя</label>
+    <label><input type="radio" name="period" value="month"> Месяц</label>
+    <button onclick="loadAnalytics()">Обновить</button>
+  </div>
+  <canvas id="analyticsChart" height="120"></canvas>
+  <div id="analyticsTable" style="margin-top:1rem;"></div>
+  <div style="margin-top:1rem;">
+    <h3>📌 Общий совет:</h3>
+    <p id="adviceGeneral">—</p>
+    <h3>🎯 Практический совет:</h3>
+    <p id="advicePractical">—</p>
+  </div>
+</div>
+
+<div class="chart-container">
     <canvas id="activityChart"></canvas>
   </div>
 
@@ -261,5 +289,13 @@ function applyInput(metric) {
 }
 
 </script>
+
+<script>
+function showTab(tab) {
+  document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
+  document.getElementById('analyticsTab').style.display = tab === 'analytics' ? 'block' : 'none';
+}
+</script>
+
 </body>
 </html>
