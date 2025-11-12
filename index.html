@@ -55,28 +55,28 @@
 
   <div class="metrics">
     <div class="card">
-      <div>📞 Звонки: <span id="calls">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'calls\', this.value)" /> / <span id="callsGoal">70</span></div>
+      <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
       <div class="buttons">
         <button onclick="change('calls', 1)">+ Звонок</button>
         <button onclick="change('calls', -1)">– Звонок</button>
       </div>
     </div>
     <div class="card">
-      <div>📲 Дозвоны: <span id="reached">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'reached\', this.value)" /> / <span id="reachedGoal">25</span></div>
+      <div>📲 Дозвоны: <span id="reached">0</span> / <span id="reachedGoal">25</span></div>
       <div class="buttons">
         <button onclick="change('reached', 1)">+ Дозвон</button>
         <button onclick="change('reached', -1)">– Дозвон</button>
       </div>
     </div>
     <div class="card">
-      <div>🤝 Встречи: <span id="meetings">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'meetings\', this.value)" /></div>
+      <div>🤝 Встречи: <span id="meetings">0</span></div>
       <div class="buttons">
         <button onclick="change('meetings', 1)">+ Встреча</button>
         <button onclick="change('meetings', -1)">– Встреча</button>
       </div>
     </div>
     <div class="card">
-      <div>📅 Назначено: <span id="scheduled">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'scheduled\', this.value)" /></div>
+      <div>📅 Назначено: <span id="scheduled">0</span></div>
       <div class="buttons">
         <button onclick="change('scheduled', 1)">+ Назначено</button>
         <button onclick="change('scheduled', -1)">– Назначено</button>
@@ -86,14 +86,14 @@
 
   
     <div class="card">
-      <div>📝 Назначено КП: <span id="kpset">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpset\', this.value)" /></div>
+      <div>📝 Назначено КП: <span id="kpset">0</span></div>
       <div class="buttons">
         <button onclick="change('kpset', 1)">+ Назначено</button>
         <button onclick="change('kpset', -1)">– Назначено</button>
       </div>
     </div>
     <div class="card">
-      <div>📨 Проведено КП: <span id="kpsent">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpsent\', this.value)" /></div>
+      <div>📨 Проведено КП: <span id="kpsent">0</span></div>
       <div class="buttons">
         <button onclick="change('kpsent', 1)">+ Проведено</button>
         <button onclick="change('kpsent', -1)">– Проведено</button>
@@ -166,7 +166,27 @@
       }
     }
 
-    function update() {
+    
+function saveToFirebase() {
+  const db = window._firebase.db;
+  const { doc, setDoc } = window._firebase;
+  const user = localStorage.getItem("userName");
+  const date = new Date().toISOString().slice(0, 10);
+  const payload = {
+    date,
+    calls: data.calls,
+    reached: data.reached,
+    meetings: data.meetings,
+    scheduled: data.scheduled,
+    kpset: data.kpset,
+    kpsent: data.kpsent
+  };
+  setDoc(doc(db, "users", user, "history", date), payload)
+    .catch((e) => console.error("Ошибка сохранения в Firebase", e));
+}
+
+
+function update() {
       saveToFirebase();
       document.getElementById('kpset').textContent = data.kpset;
       document.getElementById('kpsent').textContent = data.kpsent;
@@ -185,42 +205,5 @@
 
     update();
   </script>
-
-<script>
-function setValue(metric, val) {
-  val = parseInt(val);
-  if (!isNaN(val)) {
-    data[metric] = Math.max(0, val);
-    adjustGoals();
-    update();
-  }
-}
-</script>
-
-
-<script type="module">
-const db = window._firebase.db;
-const { doc, setDoc } = window._firebase;
-
-async function saveToFirebase() {
-  const user = localStorage.getItem("userName");
-  const date = new Date().toISOString().slice(0, 10);
-  const payload = {
-    date,
-    calls: data.calls,
-    reached: data.reached,
-    meetings: data.meetings,
-    scheduled: data.scheduled,
-    kpset: data.kpset,
-    kpsent: data.kpsent
-  };
-  try {
-    await setDoc(doc(db, "users", user, "history", date), payload);
-  } catch (e) {
-    console.error("Ошибка сохранения в Firebase", e);
-  }
-}
-</script>
-
 </body>
 </html>
