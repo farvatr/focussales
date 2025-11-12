@@ -181,15 +181,15 @@ function applyInput(metric) {
     document.getElementById("username").textContent = user;
 
     let data = {
-      kpset: 0,
-      kpsent: 0,
-      calls: 0,
-      reached: 0,
-      meetings: 0,
-      scheduled: 0,
-      callsGoal: 70,
-      reachedGoal: 25
-    };
+  calls: 0,
+  reached: 0,
+  meetings: 0,
+  scheduled: 0,
+  kpset: 0,
+  kpsent: 0,
+  callsGoal: 70,
+  reachedGoal: 25
+};
 
     const ctx = document.getElementById("activityChart").getContext("2d");
     const chart = new Chart(ctx, {
