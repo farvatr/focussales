@@ -5,7 +5,20 @@
   <meta charset="UTF-8" />
   <title>Sales Focus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js">
+function applyInput(metric) {
+  const field = document.getElementById("input-" + metric);
+  if (field) {
+    const val = parseInt(field.value);
+    if (!isNaN(val)) {
+      data[metric] = Math.max(0, val);
+      adjustGoals();
+      update();
+    }
+  }
+}
+
+</script>
   <style>
     body {
       background: radial-gradient(circle at top, #53118F, #140022 80%);
@@ -56,48 +69,78 @@
   <div class="metrics">
     <div class="card">
       <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
-      <div class="buttons">
-        <button onclick="change('calls', 1)">+ Звонок</button>
-        <button onclick="change('calls', -1)">– Звонок</button>
+      
+    <div class="buttons">
+      <button onclick="change('calls', 1)">+ Звонок</button>
+      <button onclick="change('calls', -1)">– Звонок</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-calls" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('calls')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
     <div class="card">
       <div>📲 Дозвоны: <span id="reached">0</span> / <span id="reachedGoal">25</span></div>
-      <div class="buttons">
-        <button onclick="change('reached', 1)">+ Дозвон</button>
-        <button onclick="change('reached', -1)">– Дозвон</button>
+      
+    <div class="buttons">
+      <button onclick="change('reached', 1)">+ Дозвон</button>
+      <button onclick="change('reached', -1)">– Дозвон</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-reached" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('reached')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
     <div class="card">
       <div>🤝 Встречи: <span id="meetings">0</span></div>
-      <div class="buttons">
-        <button onclick="change('meetings', 1)">+ Встреча</button>
-        <button onclick="change('meetings', -1)">– Встреча</button>
+      
+    <div class="buttons">
+      <button onclick="change('meetings', 1)">+ Встреча</button>
+      <button onclick="change('meetings', -1)">– Встреча</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-meetings" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('meetings')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
     <div class="card">
       <div>📅 Назначено: <span id="scheduled">0</span></div>
-      <div class="buttons">
-        <button onclick="change('scheduled', 1)">+ Назначено</button>
-        <button onclick="change('scheduled', -1)">– Назначено</button>
+      
+    <div class="buttons">
+      <button onclick="change('scheduled', 1)">+ Назначено</button>
+      <button onclick="change('scheduled', -1)">– Назначено</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-scheduled" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('scheduled')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
   </div>
 
   
     <div class="card">
       <div>📝 Назначено КП: <span id="kpset">0</span></div>
-      <div class="buttons">
-        <button onclick="change('kpset', 1)">+ Назначено</button>
-        <button onclick="change('kpset', -1)">– Назначено</button>
+      
+    <div class="buttons">
+      <button onclick="change('kpset', 1)">+ Назначено</button>
+      <button onclick="change('kpset', -1)">– Назначено</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-kpset" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('kpset')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
     <div class="card">
       <div>📨 Проведено КП: <span id="kpsent">0</span></div>
-      <div class="buttons">
-        <button onclick="change('kpsent', 1)">+ Проведено</button>
-        <button onclick="change('kpsent', -1)">– Проведено</button>
+      
+    <div class="buttons">
+      <button onclick="change('kpsent', 1)">+ Проведено</button>
+      <button onclick="change('kpsent', -1)">– Проведено</button>
+      <div style="margin-top: 6px;">
+        <input type="number" id="input-kpsent" placeholder="Ввод" style="width: 40%; padding: 4px; border-radius: 4px;" />
+        <button onclick="applyInput('kpsent')" style="background: #933DC9; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-left: 4px;">Ввод</button>
       </div>
+    </div>
     </div>
 
   <div class="chart-container">
@@ -204,6 +247,19 @@ function update() {
     }
 
     update();
-  </script>
+  
+function applyInput(metric) {
+  const field = document.getElementById("input-" + metric);
+  if (field) {
+    const val = parseInt(field.value);
+    if (!isNaN(val)) {
+      data[metric] = Math.max(0, val);
+      adjustGoals();
+      update();
+    }
+  }
+}
+
+</script>
 </body>
 </html>
