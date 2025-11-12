@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,194 +6,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sales Focus Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
     body { background: #2C003E; color: white; font-family: sans-serif; margin: 0; padding: 1rem; }
-    .tab { display: none; }
-    .tab.active { display: block; }
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .card { background: #3E0D5E; border-radius: 12px; padding: 1rem; box-shadow: 0 0 10px #933DC9; }
-    .card h3 { margin: 0 0 0.5rem; }
-    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    button, input[type=number] { font-size: 1rem; border: none; border-radius: 6px; }
-    button { background: #933DC9; color: white; padding: 0.5rem 1rem; cursor: pointer; }
-    input[type=number] { width: 60px; padding: 0.3rem; text-align: center; }
-    nav { display: flex; gap: 1rem; margin-bottom: 1rem; }
-    nav button { background: #140022; }
-    table { width: 100%; margin-top: 1rem; border-collapse: collapse; }
-    th, td { padding: 0.5rem; border: 1px solid #933DC9; text-align: center; }
-    th { background: #933DC9; }
-    .tips { margin-top: 1rem; background: #441152; padding: 1rem; border-radius: 8px; }
+    .card { background: #3E0D5E; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 0 10px #933DC9; }
+    button { background: #933DC9; border: none; border-radius: 6px; padding: 6px 12px; color: white; margin: 2px; cursor: pointer; }
+    input[type="number"] { width: 80px; border-radius: 6px; border: none; padding: 6px; text-align: center; margin: 4px 0; }
+    canvas { background: white; border-radius: 12px; }
+    table { width: 100%; margin-top: 1rem; border-collapse: collapse; color: white; }
+    th, td { border: 1px solid #933DC9; padding: 6px; text-align: center; }
   </style>
 </head>
 <body>
-  <nav>
-    <button onclick="switchTab('today')">Сегодня</button>
-    <button onclick="switchTab('analytics')">Аналитика</button>
-  </nav>
-
-  <div id="today" class="tab active">
-    <h2>Трекер активности</h2>
-    <div class="metrics" id="metricsContainer"></div>
-    <canvas id="dailyChart" style="margin-top:2rem;"></canvas>
+  <h1>Sales Focus Tracker</h1>
+  <div class="card">
+    <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
+    <input type="number" id="callsInput" />
+    <button onclick="manual('calls')">Ввод</button>
+    <button onclick="change('calls', 1)">+ Звонок</button>
+    <button onclick="change('calls', -1)">− Звонок</button>
   </div>
-
-  <div id="analytics" class="tab">
-    <h2>Аналитика</h2>
-    <div>
-      <button onclick="loadAnalytics('day')">День</button>
-      <button onclick="loadAnalytics('week')">Неделя</button>
-      <button onclick="loadAnalytics('month')">Месяц</button>
-    </div>
-    <canvas id="analyticsChart" style="margin-top:1rem;"></canvas>
-    <div id="tableContainer"></div>
-    <div class="tips">
-      <p><strong>Совет:</strong> <span id="tipMain"></span></p>
-      <p><strong>Практический совет:</strong> <span id="tipExtra"></span></p>
-    </div>
+  <div class="card">
+    <div>📲 Дозвоны: <span id="reached">0</span> / <span id="reachedGoal">25</span></div>
+    <input type="number" id="reachedInput" />
+    <button onclick="manual('reached')">Ввод</button>
+    <button onclick="change('reached', 1)">+ Дозвон</button>
+    <button onclick="change('reached', -1)">− Дозвон</button>
   </div>
-
+  <div class="card">
+    <canvas id="chart" height="100"></canvas>
+  </div>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBDf49rE9Mr2jQzPzcKhJi5iuUegqjGY8Q",
-      authDomain: "sales-focus-tracker.firebaseapp.com",
-      projectId: "sales-focus-tracker",
-      storageBucket: "sales-focus-tracker.firebasestorage.app",
-      messagingSenderId: "585476913483",
-      appId: "1:585476913483:web:c6696bd731288a7056d0ce",
-      measurementId: "G-VFMHMDJW0R"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const metrics = ["calls", "reached", "meetings", "scheduled", "kpset", "kpsent"];
-    const data = { calls:0, reached:0, meetings:0, scheduled:0, kpset:0, kpsent:0 };
-    const goals = { calls:70, reached:25 };
-    const username = "user";
-    const todayKey = new Date().toISOString().split("T")[0];
-
-    const container = document.getElementById("metricsContainer");
-    metrics.forEach(metric => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>${metric}</h3>
-        <div><span id="${metric}Value">0</span></div>
-        <div class="controls">
-          <button onclick="change('${metric}', 1)">+</button>
-          <button onclick="change('${metric}', -1)">−</button>
-          <input type="number" id="${metric}Input" />
-          <button onclick="manual('${metric}')">Ввод</button>
-        </div>`;
-      container.appendChild(card);
+    const data = { calls: 0, reached: 0 };
+    const goals = { calls: 70, reached: 25 };
+    const ctx = document.getElementById("chart").getContext("2d");
+    const chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Звонки", "Дозвоны"],
+        datasets: [{ label: "Текущее", data: [0, 0], backgroundColor: "#933DC9" }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
     });
-
-    function switchTab(id) {
-      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      if (id === "analytics") loadAnalytics('week');
-    }
-
-    function adjustGoals() {
-      if (data.meetings >= 3) { goals.calls = 30; goals.reached = 10; }
-      else if (data.meetings === 2) { goals.calls = 50; goals.reached = 15; }
-      else if (data.meetings === 1) { goals.calls = 60; goals.reached = 20; }
-      else { goals.calls = 70; goals.reached = 25; }
-    }
-
-    function updateUI() {
-      metrics.forEach(k => {
-        document.getElementById(k + "Value").textContent = data[k];
-      });
-      chart.data.datasets[0].data = metrics.map(k => data[k]);
+    function update() {
+      document.getElementById("calls").textContent = data.calls;
+      document.getElementById("reached").textContent = data.reached;
+      document.getElementById("callsGoal").textContent = goals.calls;
+      document.getElementById("reachedGoal").textContent = goals.reached;
+      chart.data.datasets[0].data = [data.calls, data.reached];
       chart.update();
-      saveData();
     }
-
     function change(metric, delta) {
       data[metric] = Math.max(0, data[metric] + delta);
-      if (metric === "meetings") adjustGoals();
-      updateUI();
+      adjustGoals();
+      update();
     }
-
     function manual(metric) {
       const val = parseInt(document.getElementById(metric + "Input").value);
       if (!isNaN(val)) {
         data[metric] = Math.max(0, val);
-        if (metric === "meetings") adjustGoals();
-        updateUI();
-      }
-    }
-
-    function saveData() {
-      db.collection("users").doc(username).collection("history").doc(todayKey).set(data);
-    }
-
-    db.collection("users").doc(username).collection("history").doc(todayKey).get().then(doc => {
-      if (doc.exists) {
-        Object.assign(data, doc.data());
         adjustGoals();
-        updateUI();
+        update();
       }
-    });
-
-    const chart = new Chart(document.getElementById("dailyChart"), {
-      type: "bar",
-      data: {
-        labels: ["calls", "reached", "meetings", "scheduled", "kpset", "kpsent"],
-        datasets: [{ label: "Сегодня", data: [0, 0, 0, 0, 0, 0], backgroundColor: "#933DC9" }]
-      }
-    });
-
-    let analyticsChart;
-    function loadAnalytics(period) {
-      const end = new Date();
-      const start = new Date();
-      if (period === "week") start.setDate(end.getDate() - 6);
-      if (period === "month") start.setDate(end.getDate() - 29);
-      const days = [];
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        days.push(d.toISOString().split("T")[0]);
-      }
-      Promise.all(days.map(date =>
-        db.collection("users").doc(username).collection("history").doc(date).get().then(doc =>
-          ({ date, ...metrics.reduce((acc, k) => (acc[k] = doc.exists ? doc.data()[k] || 0 : 0, acc), {}) })
-        )
-      )).then(results => {
-        const labels = results.map(r => r.date);
-        const datasets = metrics.map(m => ({
-          label: m, data: results.map(r => r[m]), borderWidth: 2, fill: false
-        }));
-        if (analyticsChart) analyticsChart.destroy();
-        analyticsChart = new Chart(document.getElementById("analyticsChart"), {
-          type: "line",
-          data: { labels, datasets },
-          options: { responsive: true, plugins: { legend: { display: true } } }
-        });
-        const table = `<table><tr><th>Дата</th>${metrics.map(m => `<th>${m}</th>`).join("")}</tr>` +
-          results.map(r => `<tr><td>${r.date}</td>${metrics.map(m => `<td>${r[m]}</td>`).join("")}</tr>`).join("") +
-          `</table>`;
-        document.getElementById("tableContainer").innerHTML = table;
-        showAdvice(results);
-      });
     }
-
-    function showAdvice(data) {
-      const totalCalls = data.reduce((s, r) => s + r.calls, 0);
-      const totalMeetings = data.reduce((s, r) => s + r.meetings, 0);
-      let tip = "Продолжай в том же духе!";
-      let detail = "Темп хороший. Следи за равномерной загрузкой.";
-      if (totalCalls < totalMeetings * 20) {
-        tip = "Недостаточно звонков.";
-        detail = "Подними активность, чтобы увеличить количество встреч.";
-      } else if (totalMeetings === 0) {
-        tip = "Встреч пока нет.";
-        detail = "Попробуй изменить подход в диалоге.";
+    function adjustGoals() {
+      if (data.calls >= 60) {
+        goals.calls = 50;
+        goals.reached = 15;
+      } else if (data.calls >= 30) {
+        goals.calls = 30;
+        goals.reached = 10;
+      } else {
+        goals.calls = 70;
+        goals.reached = 25;
       }
-      document.getElementById("tipMain").textContent = tip;
-      document.getElementById("tipExtra").textContent = detail;
     }
+    update();
   </script>
 </body>
 </html>
