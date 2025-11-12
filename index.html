@@ -167,6 +167,7 @@
     }
 
     function update() {
+      saveToFirebase();
       document.getElementById('kpset').textContent = data.kpset;
       document.getElementById('kpsent').textContent = data.kpsent;
       document.getElementById("calls").textContent = data.calls;
@@ -192,6 +193,31 @@ function setValue(metric, val) {
     data[metric] = Math.max(0, val);
     adjustGoals();
     update();
+  }
+}
+</script>
+
+
+<script type="module">
+const db = window._firebase.db;
+const { doc, setDoc } = window._firebase;
+
+async function saveToFirebase() {
+  const user = localStorage.getItem("userName");
+  const date = new Date().toISOString().slice(0, 10);
+  const payload = {
+    date,
+    calls: data.calls,
+    reached: data.reached,
+    meetings: data.meetings,
+    scheduled: data.scheduled,
+    kpset: data.kpset,
+    kpsent: data.kpsent
+  };
+  try {
+    await setDoc(doc(db, "users", user, "history", date), payload);
+  } catch (e) {
+    console.error("Ошибка сохранения в Firebase", e);
   }
 }
 </script>
