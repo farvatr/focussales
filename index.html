@@ -18,6 +18,52 @@ function applyInput(metric) {
   }
 }
 
+
+function change(metric, delta) {
+  if (!(metric in data)) return;
+  data[metric] = Math.max(0, data[metric] + delta);
+  adjustGoals();
+  update();
+}
+
+function adjustGoals() {
+  if (data.meetings >= 3) {
+    data.callsGoal = 30;
+    data.reachedGoal = 10;
+  } else if (data.meetings === 2) {
+    data.callsGoal = 50;
+    data.reachedGoal = 15;
+  } else if (data.meetings === 1) {
+    data.callsGoal = 60;
+    data.reachedGoal = 20;
+  } else {
+    data.callsGoal = 70;
+    data.reachedGoal = 25;
+  }
+}
+
+function update() {
+  document.getElementById("calls").textContent = data.calls;
+  document.getElementById("reached").textContent = data.reached;
+  document.getElementById("meetings").textContent = data.meetings;
+  document.getElementById("scheduled").textContent = data.scheduled;
+  document.getElementById("kpset").textContent = data.kpset;
+  document.getElementById("kpsent").textContent = data.kpsent;
+  document.getElementById("callsGoal").textContent = data.callsGoal;
+  document.getElementById("reachedGoal").textContent = data.reachedGoal;
+
+  if (window.chart) {
+    window.chart.data.datasets[0].data = [
+      data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
+    ];
+    window.chart.update();
+  }
+
+  if (typeof saveToFirebase === "function") {
+    saveToFirebase();
+  }
+}
+
 </script>
   <style>
     body {
@@ -214,28 +260,8 @@ function applyInput(metric) {
       }
     });
 
-    function change(metric, delta) {
-      if (!(metric in data)) return;
-      data[metric] = Math.max(0, data[metric] + delta);
-      adjustGoals();
-      update();
-    }
-
-    function adjustGoals() {
-      if (data.meetings >= 3) {
-        data.callsGoal = 30;
-        data.reachedGoal = 10;
-      } else if (data.meetings == 2) {
-        data.callsGoal = 50;
-        data.reachedGoal = 15;
-      } else if (data.meetings == 1) {
-        data.callsGoal = 60;
-        data.reachedGoal = 20;
-      } else {
-        data.callsGoal = 70;
-        data.reachedGoal = 25;
-      }
-    }
+    
+        }
 
     
 function saveToFirebase() {
@@ -257,22 +283,6 @@ function saveToFirebase() {
 }
 
 
-function update() {
-      saveToFirebase();
-      document.getElementById('kpset').textContent = data.kpset;
-      document.getElementById('kpsent').textContent = data.kpsent;
-      document.getElementById("calls").textContent = data.calls;
-      document.getElementById("reached").textContent = data.reached;
-      document.getElementById("meetings").textContent = data.meetings;
-      document.getElementById("scheduled").textContent = data.scheduled;
-      document.getElementById("callsGoal").textContent = data.callsGoal;
-      document.getElementById("reachedGoal").textContent = data.reachedGoal;
-
-      chart.data.datasets[0].data = [
-        data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
-      ];
-      chart.update();
-    }
 
     update();
   
@@ -288,6 +298,52 @@ function applyInput(metric) {
   }
 }
 
+
+function change(metric, delta) {
+  if (!(metric in data)) return;
+  data[metric] = Math.max(0, data[metric] + delta);
+  adjustGoals();
+  update();
+}
+
+function adjustGoals() {
+  if (data.meetings >= 3) {
+    data.callsGoal = 30;
+    data.reachedGoal = 10;
+  } else if (data.meetings === 2) {
+    data.callsGoal = 50;
+    data.reachedGoal = 15;
+  } else if (data.meetings === 1) {
+    data.callsGoal = 60;
+    data.reachedGoal = 20;
+  } else {
+    data.callsGoal = 70;
+    data.reachedGoal = 25;
+  }
+}
+
+function update() {
+  document.getElementById("calls").textContent = data.calls;
+  document.getElementById("reached").textContent = data.reached;
+  document.getElementById("meetings").textContent = data.meetings;
+  document.getElementById("scheduled").textContent = data.scheduled;
+  document.getElementById("kpset").textContent = data.kpset;
+  document.getElementById("kpsent").textContent = data.kpsent;
+  document.getElementById("callsGoal").textContent = data.callsGoal;
+  document.getElementById("reachedGoal").textContent = data.reachedGoal;
+
+  if (window.chart) {
+    window.chart.data.datasets[0].data = [
+      data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
+    ];
+    window.chart.update();
+  }
+
+  if (typeof saveToFirebase === "function") {
+    saveToFirebase();
+  }
+}
+
 </script>
 
 <script>
@@ -295,6 +351,52 @@ function showTab(tab) {
   document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
   document.getElementById('analyticsTab').style.display = tab === 'analytics' ? 'block' : 'none';
 }
+
+function change(metric, delta) {
+  if (!(metric in data)) return;
+  data[metric] = Math.max(0, data[metric] + delta);
+  adjustGoals();
+  update();
+}
+
+function adjustGoals() {
+  if (data.meetings >= 3) {
+    data.callsGoal = 30;
+    data.reachedGoal = 10;
+  } else if (data.meetings === 2) {
+    data.callsGoal = 50;
+    data.reachedGoal = 15;
+  } else if (data.meetings === 1) {
+    data.callsGoal = 60;
+    data.reachedGoal = 20;
+  } else {
+    data.callsGoal = 70;
+    data.reachedGoal = 25;
+  }
+}
+
+function update() {
+  document.getElementById("calls").textContent = data.calls;
+  document.getElementById("reached").textContent = data.reached;
+  document.getElementById("meetings").textContent = data.meetings;
+  document.getElementById("scheduled").textContent = data.scheduled;
+  document.getElementById("kpset").textContent = data.kpset;
+  document.getElementById("kpsent").textContent = data.kpsent;
+  document.getElementById("callsGoal").textContent = data.callsGoal;
+  document.getElementById("reachedGoal").textContent = data.reachedGoal;
+
+  if (window.chart) {
+    window.chart.data.datasets[0].data = [
+      data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
+    ];
+    window.chart.update();
+  }
+
+  if (typeof saveToFirebase === "function") {
+    saveToFirebase();
+  }
+}
+
 </script>
 
 </body>
