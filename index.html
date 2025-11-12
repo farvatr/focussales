@@ -47,64 +47,36 @@
       margin-top: 2rem;
     }
   </style>
-
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBDf49rE9Mr2jQzPzcKhJi5iuUegqjGY8Q",
-    authDomain: "sales-focus-tracker.firebaseapp.com",
-    projectId: "sales-focus-tracker",
-    storageBucket: "sales-focus-tracker.firebasestorage.app",
-    messagingSenderId: "585476913483",
-    appId: "1:585476913483:web:c6696bd731288a7056d0ce",
-    measurementId: "G-VFMHMDJW0R"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window._firebase = { db, doc, setDoc, getDoc, collection, getDocs, query, where };
-</script>
-
 </head>
 <body>
   <div class="header">
     Добро пожаловать, <span id="username"></span>!
   </div>
 
-  
-<div style="margin-bottom: 1rem;">
-  <button onclick="showTab('main')" style="margin-right:10px;">Сегодня</button>
-  <button onclick="showTab('analytics')">Аналитика</button>
-</div>
-
-<div id="mainTab">
-<div class="metrics">
+  <div class="metrics">
     <div class="card">
-      <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
+      <div>📞 Звонки: <span id="calls">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'calls\', this.value)" /> / <span id="callsGoal">70</span></div>
       <div class="buttons">
         <button onclick="change('calls', 1)">+ Звонок</button>
         <button onclick="change('calls', -1)">– Звонок</button>
       </div>
     </div>
     <div class="card">
-      <div>📲 Дозвоны: <span id="reached">0</span> / <span id="reachedGoal">25</span></div>
+      <div>📲 Дозвоны: <span id="reached">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'reached\', this.value)" /> / <span id="reachedGoal">25</span></div>
       <div class="buttons">
         <button onclick="change('reached', 1)">+ Дозвон</button>
         <button onclick="change('reached', -1)">– Дозвон</button>
       </div>
     </div>
     <div class="card">
-      <div>🤝 Встречи: <span id="meetings">0</span></div>
+      <div>🤝 Встречи: <span id="meetings">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'meetings\', this.value)" /></div>
       <div class="buttons">
         <button onclick="change('meetings', 1)">+ Встреча</button>
         <button onclick="change('meetings', -1)">– Встреча</button>
       </div>
     </div>
     <div class="card">
-      <div>📅 Назначено: <span id="scheduled">0</span></div>
+      <div>📅 Назначено: <span id="scheduled">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'scheduled\', this.value)" /></div>
       <div class="buttons">
         <button onclick="change('scheduled', 1)">+ Назначено</button>
         <button onclick="change('scheduled', -1)">– Назначено</button>
@@ -114,39 +86,21 @@
 
   
     <div class="card">
-      <div>📝 Назначено КП: <span id="kpset">0</span></div>
+      <div>📝 Назначено КП: <span id="kpset">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpset\', this.value)" /></div>
       <div class="buttons">
         <button onclick="change('kpset', 1)">+ Назначено</button>
         <button onclick="change('kpset', -1)">– Назначено</button>
       </div>
     </div>
     <div class="card">
-      <div>📨 Проведено КП: <span id="kpsent">0</span></div>
+      <div>📨 Проведено КП: <span id="kpsent">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpsent\', this.value)" /></div>
       <div class="buttons">
         <button onclick="change('kpsent', 1)">+ Проведено</button>
         <button onclick="change('kpsent', -1)">– Проведено</button>
       </div>
     </div>
 
-  </div><div id="analyticsTab" style="display:none;">
-<h2>📊 Аналитика</h2>
-<div style="margin-bottom:1rem;">
-  Период:
-  <label><input type="radio" name="period" value="day" checked> День</label>
-  <label><input type="radio" name="period" value="week"> Неделя</label>
-  <label><input type="radio" name="period" value="month"> Месяц</label>
-  <button onclick="loadAnalytics()">Обновить</button>
-</div>
-<canvas id="analyticsChart" height="120"></canvas>
-<div id="analyticsTable" style="margin-top:1rem;"></div>
-<div style="margin-top:1rem;">
-  <h3>📌 Общий совет:</h3>
-  <p id="adviceGeneral">—</p>
-  <h3>🎯 Практический совет:</h3>
-  <p id="advicePractical">—</p>
-</div>
-</div>
-<div class="chart-container">
+  <div class="chart-container">
     <canvas id="activityChart"></canvas>
   </div>
 
@@ -230,88 +184,6 @@
 
     update();
   </script>
-
-<script>
-function showTab(tab) {
-  document.getElementById('mainTab').style.display = tab === 'main' ? 'block' : 'none';
-  document.getElementById('analyticsTab').style.display = tab === 'analytics' ? 'block' : 'none';
-}
-</script>
-
-
-<script type="module">
-import { formatISO, subDays } from "https://cdn.skypack.dev/date-fns";
-
-const db = window._firebase.db;
-const { collection, query, where, getDocs } = window._firebase;
-
-async function loadAnalytics() {
-  const user = localStorage.getItem("userName");
-  const period = document.querySelector('input[name="period"]:checked').value;
-
-  const today = new Date();
-  let start = new Date();
-  if (period === "week") start = subDays(today, 6);
-  if (period === "month") start = subDays(today, 29);
-  const startStr = formatISO(start, { representation: 'date' });
-  const endStr = formatISO(today, { representation: 'date' });
-
-  const q = query(
-    collection(db, "users", user, "history"),
-    where("date", ">=", startStr),
-    where("date", "<=", endStr)
-  );
-  const snapshot = await getDocs(q);
-  const rows = [], labels = [], calls = [], reached = [], meetings = [];
-
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    labels.push(doc.id);
-    calls.push(d.calls || 0);
-    reached.push(d.reached || 0);
-    meetings.push(d.meetings || 0);
-    rows.push(`<tr><td>${doc.id}</td><td>${d.calls}</td><td>${d.reached}</td><td>${d.meetings}</td></tr>`);
-  });
-
-  document.getElementById("analyticsTable").innerHTML =
-    "<table border='1' cellpadding='6'><tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th></tr>" +
-    rows.join("") + "</table>";
-
-  const ctx = document.getElementById("analyticsChart").getContext("2d");
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Звонки", data: calls, borderColor: "#933DC9", tension: 0.3 },
-        { label: "Дозвоны", data: reached, borderColor: "#5AC8FA", tension: 0.3 },
-        { label: "Встречи", data: meetings, borderColor: "#4CD964", tension: 0.3 }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: "Динамика активности" }
-      }
-    }
-  });
-
-  const avgCalls = calls.reduce((a,b)=>a+b,0)/calls.length || 0;
-  const avgReached = reached.reduce((a,b)=>a+b,0)/reached.length || 0;
-  const conversion = avgReached / avgCalls;
-  document.getElementById("adviceGeneral").textContent =
-    conversion < 0.3
-      ? "Конверсия дозвонов ниже нормы — пересмотри подход к скриптам."
-      : "Конверсия стабильная — продолжай в том же духе.";
-
-  const minIdx = reached.indexOf(Math.min(...reached));
-  document.getElementById("advicePractical").textContent =
-    `В день ${labels[minIdx]} было меньше всего дозвонов — усили фокус на звонках в этот день недели.`;
-}
-
-window.loadAnalytics = loadAnalytics;
-</script>
-
 
 <script>
 function setValue(metric, val) {
