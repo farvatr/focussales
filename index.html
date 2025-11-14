@@ -64,83 +64,51 @@
       <p><strong>Звонки:</strong> <span id="adviceMain">—</span></p>
       <p><strong>Дозвоны:</strong> <span id="adviceExtra">—</span></p>
     </div>
-
-    <div class="card">
-      <h3>Аналитика</h3>
-      <select id="periodSelect">
-        <option value="day">День</option>
-        <option value="week" selected>Неделя</option>
-        <option value="month">Месяц</option>
-      </select>
-      <canvas id="myChart" height="150"></canvas>
-      <table id="historyTable" style="width:100%; margin-top:1rem;"></table>
-    </div>
   </div>
 
   <script>
-    const metricsList = ["calls", "reached", "meetings", "scheduled", "kpSet", "kpDone"];
-    const metricsLabels = {
-      calls: "Звонки",
-      reached: "Дозвоны",
-      meetings: "Встречи",
-      scheduled: "Назначено встреч",
-      kpSet: "Назначено КП",
-      kpDone: "Проведено КП"
-    };
-
-    let user = localStorage.getItem("sf_user");
-    if (user) showApp(); else document.getElementById("login").classList.remove("hidden");
+    const metrics = ["calls", "reached"];
+    const labels = { calls: "Звонки", reached: "Дозвоны" };
+    const today = new Date().toISOString().split("T")[0];
+    let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
+    if (!data[today]) data[today] = { calls: 0, reached: 0 };
 
     function saveUser() {
-      const name = document.getElementById("username").value.trim();
-      if (name) {
-        localStorage.setItem("sf_user", name);
-        user = name;
+      const username = document.getElementById("username").value.trim();
+      if (username) {
+        localStorage.setItem("sf_user", username);
         showApp();
       }
     }
 
     function showApp() {
+      const username = localStorage.getItem("sf_user");
+      document.getElementById("greeting").textContent = username;
       document.getElementById("login").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
-      document.getElementById("greeting").textContent = user;
-      loadMetricsUI();
-      loadTodayValues();
-      updateChartAndTable();
+      loadUI();
     }
 
-    const today = new Date().toISOString().split("T")[0];
-    let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
-
-    if (!data[today]) data[today] = { calls:0, reached:0, meetings:0, scheduled:0, kpSet:0, kpDone:0 };
-
-    function loadMetricsUI() {
+    function loadUI() {
       const container = document.getElementById("metrics");
       container.innerHTML = "";
-      metricsList.forEach(key => {
+      metrics.forEach(key => {
         const row = document.createElement("div");
         row.className = "metric-row";
         row.innerHTML = \`
-          <label>\${metricsLabels[key]}:</label>
-          <input type="number" id="\${key}Val" value="0" />
+          <label>\${labels[key]}:</label>
+          <input type="number" id="\${key}Val" value="\${data[today][key] || 0}" />
           <button onclick="saveMetric('\${key}')">Ввод</button>
         \`;
         container.appendChild(row);
       });
+      updateAdvice();
     }
 
     function saveMetric(key) {
       const val = parseInt(document.getElementById(key + "Val").value) || 0;
       data[today][key] = val;
       localStorage.setItem("sf_data", JSON.stringify(data));
-      updateAdvice();
-      updateChartAndTable();
-    }
-
-    function loadTodayValues() {
-      metricsList.forEach(key => {
-        document.getElementById(key + "Val").value = data[today][key] || 0;
-      });
       updateAdvice();
     }
 
@@ -162,54 +130,8 @@
         "Остановись, ты не в колл-центре.";
     }
 
-    const ctx = document.getElementById("myChart").getContext("2d");
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: [], datasets: [
-        { label: 'Звонки', data: [], borderColor: '#933DC9', tension: 0.3 },
-        { label: 'Дозвоны', data: [], borderColor: '#26d9f0', tension: 0.3 }
-      ]},
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true },
-          x: {}
-        }
-      }
-    });
-
-    function updateChartAndTable() {
-      const period = document.getElementById("periodSelect").value;
-      const labels = [], calls = [], reached = [], rows = [];
-      const todayDate = new Date();
-
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(todayDate);
-        d.setDate(d.getDate() - i);
-        const ds = d.toISOString().split("T")[0];
-        const entry = data[ds];
-        if (!entry) continue;
-
-        if (period === "day" && ds !== today) continue;
-        if (period === "week" && i < 23) continue;
-        if (period === "month") {}  // all pass
-
-        labels.push(ds.slice(5));
-        calls.push(entry.calls || 0);
-        reached.push(entry.reached || 0);
-        rows.push(\`<tr><td>\${ds}</td><td>\${entry.calls||0}</td><td>\${entry.reached||0}</td><td>\${entry.meetings||0}</td><td>\${entry.scheduled||0}</td><td>\${entry.kpSet||0}</td><td>\${entry.kpDone||0}</td></tr>\`);
-      }
-
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = calls;
-      chart.data.datasets[1].data = reached;
-      chart.update();
-
-      document.getElementById("historyTable").innerHTML =
-        "<tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th><th>Назначено</th><th>КП Назначено</th><th>КП Проведено</th></tr>" + rows.join("");
-    }
-
-    document.getElementById("periodSelect").onchange = updateChartAndTable;
+    // Init
+    if (localStorage.getItem("sf_user")) showApp();
   </script>
 </body>
 </html>
