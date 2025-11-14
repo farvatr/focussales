@@ -3,65 +3,213 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Sales Focus Tracker</title>
+  <title>Sales Focus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: sans-serif; background: #1b002d; color: white; margin: 0; padding: 1rem; }
-    .card { background: #2e004d; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
-    button { background: #933DC9; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; }
-    input[type="number"] { width: 60px; padding: 5px; border-radius: 5px; border: none; text-align: center; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #1b002d;
+      color: white;
+      margin: 0;
+      padding: 1rem;
+    }
+    .card {
+      background: #2e004d;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #933DC9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    input[type="number"], input[type="text"] {
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      background: #31114d;
+      color: white;
+      margin-left: 10px;
+      width: 60px;
+      text-align: center;
+    }
+    .hidden { display: none; }
+    .metric-row {
+      margin-bottom: 0.8rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Sales Focus Tracker</h1>
+  <div id="login" class="card">
+    <h2>Введите имя</h2>
+    <input type="text" id="username" />
+    <button onclick="saveUser()">Войти</button>
+  </div>
 
-  <div class="card">
-    <h3>Метрики</h3>
-    <div>
-      Звонки: <input type="number" id="calls" value="0">
-      Дозвоны: <input type="number" id="reached" value="0">
-      <button onclick="updateAdvice()">Обновить советы</button>
+  <div id="app" class="hidden">
+    <h2>Добро пожаловать, <span id="greeting"></span>!</h2>
+
+    <div class="card">
+      <h3>Сегодня</h3>
+      <div id="metrics"></div>
+    </div>
+
+    <div class="card">
+      <h3>Советы</h3>
+      <p><strong>Звонки:</strong> <span id="adviceMain">—</span></p>
+      <p><strong>Дозвоны:</strong> <span id="adviceExtra">—</span></p>
+    </div>
+
+    <div class="card">
+      <h3>Аналитика</h3>
+      <select id="periodSelect">
+        <option value="day">День</option>
+        <option value="week" selected>Неделя</option>
+        <option value="month">Месяц</option>
+      </select>
+      <canvas id="myChart" height="150"></canvas>
+      <table id="historyTable" style="width:100%; margin-top:1rem;"></table>
     </div>
   </div>
 
-  <div class="card">
-    <h3>Советы</h3>
-    <p><strong>Основной:</strong> <span id="adviceMain">—</span></p>
-    <p><strong>Дополнительный:</strong> <span id="adviceExtra">—</span></p>
-  </div>
-
   <script>
-    function updateAdvice() {
-      const calls = parseInt(document.getElementById("calls").value) || 0;
-      const reached = parseInt(document.getElementById("reached").value) || 0;
+    const metricsList = ["calls", "reached", "meetings", "scheduled", "kpSet", "kpDone"];
+    const metricsLabels = {
+      calls: "Звонки",
+      reached: "Дозвоны",
+      meetings: "Встречи",
+      scheduled: "Назначено встреч",
+      kpSet: "Назначено КП",
+      kpDone: "Проведено КП"
+    };
 
-      if (calls <= 20) {
-        document.getElementById("adviceMain").textContent = "Ты вообще работать собираешься?";
-      } else if (calls <= 40) {
-        document.getElementById("adviceMain").textContent = "Ну неплохо, чёрт.";
-      } else if (calls <= 60) {
-        document.getElementById("adviceMain").textContent = "А ты что-то можешь.";
-      } else if (calls <= 80) {
-        document.getElementById("adviceMain").textContent = "Молодец, парашник.";
-      } else {
-        document.getElementById("adviceMain").textContent = "Отберите у него телефон!";
-      }
+    let user = localStorage.getItem("sf_user");
+    if (user) showApp(); else document.getElementById("login").classList.remove("hidden");
 
-      if (reached <= 5) {
-        document.getElementById("adviceExtra").textContent = "Ты зачем в офис приехал?";
-      } else if (reached <= 10) {
-        document.getElementById("adviceExtra").textContent = "Ты там точно работаешь?";
-      } else if (reached <= 15) {
-        document.getElementById("adviceExtra").textContent = "Неплохо, парашник.";
-      } else if (reached <= 20) {
-        document.getElementById("adviceExtra").textContent = "Давай, поднажми.";
-      } else if (reached <= 25) {
-        document.getElementById("adviceExtra").textContent = "Молодец.";
-      } else {
-        document.getElementById("adviceExtra").textContent = "Остановись, ты не в колл-центре.";
+    function saveUser() {
+      const name = document.getElementById("username").value.trim();
+      if (name) {
+        localStorage.setItem("sf_user", name);
+        user = name;
+        showApp();
       }
     }
+
+    function showApp() {
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      document.getElementById("greeting").textContent = user;
+      loadMetricsUI();
+      loadTodayValues();
+      updateChartAndTable();
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
+
+    if (!data[today]) data[today] = { calls:0, reached:0, meetings:0, scheduled:0, kpSet:0, kpDone:0 };
+
+    function loadMetricsUI() {
+      const container = document.getElementById("metrics");
+      container.innerHTML = "";
+      metricsList.forEach(key => {
+        const row = document.createElement("div");
+        row.className = "metric-row";
+        row.innerHTML = \`
+          <label>\${metricsLabels[key]}:</label>
+          <input type="number" id="\${key}Val" value="0" />
+          <button onclick="saveMetric('\${key}')">Ввод</button>
+        \`;
+        container.appendChild(row);
+      });
+    }
+
+    function saveMetric(key) {
+      const val = parseInt(document.getElementById(key + "Val").value) || 0;
+      data[today][key] = val;
+      localStorage.setItem("sf_data", JSON.stringify(data));
+      updateAdvice();
+      updateChartAndTable();
+    }
+
+    function loadTodayValues() {
+      metricsList.forEach(key => {
+        document.getElementById(key + "Val").value = data[today][key] || 0;
+      });
+      updateAdvice();
+    }
+
+    function updateAdvice() {
+      const c = data[today].calls || 0;
+      const r = data[today].reached || 0;
+      document.getElementById("adviceMain").textContent =
+        c <= 20 ? "Ты вообще работать собираешься?" :
+        c <= 40 ? "Ну неплохо, чёрт." :
+        c <= 60 ? "А ты что-то можешь." :
+        c <= 80 ? "Молодец, парашник." :
+        "Отберите у него телефон!";
+      document.getElementById("adviceExtra").textContent =
+        r <= 5 ? "Ты зачем в офис приехал?" :
+        r <= 10 ? "Ты там точно работаешь?" :
+        r <= 15 ? "Неплохо, парашник." :
+        r <= 20 ? "Давай, поднажми." :
+        r <= 25 ? "Молодец." :
+        "Остановись, ты не в колл-центре.";
+    }
+
+    const ctx = document.getElementById("myChart").getContext("2d");
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [
+        { label: 'Звонки', data: [], borderColor: '#933DC9', tension: 0.3 },
+        { label: 'Дозвоны', data: [], borderColor: '#26d9f0', tension: 0.3 }
+      ]},
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true },
+          x: {}
+        }
+      }
+    });
+
+    function updateChartAndTable() {
+      const period = document.getElementById("periodSelect").value;
+      const labels = [], calls = [], reached = [], rows = [];
+      const todayDate = new Date();
+
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(todayDate);
+        d.setDate(d.getDate() - i);
+        const ds = d.toISOString().split("T")[0];
+        const entry = data[ds];
+        if (!entry) continue;
+
+        if (period === "day" && ds !== today) continue;
+        if (period === "week" && i < 23) continue;
+        if (period === "month") {}  // all pass
+
+        labels.push(ds.slice(5));
+        calls.push(entry.calls || 0);
+        reached.push(entry.reached || 0);
+        rows.push(\`<tr><td>\${ds}</td><td>\${entry.calls||0}</td><td>\${entry.reached||0}</td><td>\${entry.meetings||0}</td><td>\${entry.scheduled||0}</td><td>\${entry.kpSet||0}</td><td>\${entry.kpDone||0}</td></tr>\`);
+      }
+
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = calls;
+      chart.data.datasets[1].data = reached;
+      chart.update();
+
+      document.getElementById("historyTable").innerHTML =
+        "<tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th><th>Назначено</th><th>КП Назначено</th><th>КП Проведено</th></tr>" + rows.join("");
+    }
+
+    document.getElementById("periodSelect").onchange = updateChartAndTable;
   </script>
 </body>
 </html>
