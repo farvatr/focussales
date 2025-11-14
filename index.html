@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Focus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #53118F, #140022 80%);
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    .header {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(147, 61, 201, 0.3);
+    }
+    .buttons {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #933DC9;
+      color: white;
+    }
+    .chart-container {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    Добро пожаловать, <span id="username"></span>!
+  </div>
+
+  <div class="metrics">
+    <div class="card">
+      <div>📞 Звонки: <span id="calls">0</span> / <span id="callsGoal">70</span></div>
+      <div class="buttons">
+        <button onclick="change('calls', 1)">+ Звонок</button>
+        <button onclick="change('calls', -1)">– Звонок</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📲 Дозвоны: <span id="reached">0</span> / <span id="reachedGoal">25</span></div>
+      <div class="buttons">
+        <button onclick="change('reached', 1)">+ Дозвон</button>
+        <button onclick="change('reached', -1)">– Дозвон</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>🤝 Встречи: <span id="meetings">0</span></div>
+      <div class="buttons">
+        <button onclick="change('meetings', 1)">+ Встреча</button>
+        <button onclick="change('meetings', -1)">– Встреча</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📅 Назначено: <span id="scheduled">0</span></div>
+      <div class="buttons">
+        <button onclick="change('scheduled', 1)">+ Назначено</button>
+        <button onclick="change('scheduled', -1)">– Назначено</button>
+      </div>
+    </div>
+  </div>
+
+  
+    <div class="card">
+      <div>📝 Назначено КП: <span id="kpset">0</span></div>
+      <div class="buttons">
+        <button onclick="change('kpset', 1)">+ Назначено</button>
+        <button onclick="change('kpset', -1)">– Назначено</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📨 Проведено КП: <span id="kpsent">0</span></div>
+      <div class="buttons">
+        <button onclick="change('kpsent', 1)">+ Проведено</button>
+        <button onclick="change('kpsent', -1)">– Проведено</button>
+      </div>
+    </div>
+
+  <div class="chart-container">
+    <canvas id="activityChart"></canvas>
+  </div>
+
+  <script>
+    const user = localStorage.getItem("userName");
+    if (!user) window.location.href = "login.html";
+    document.getElementById("username").textContent = user;
+
+    let data = {
+      kpset: 0,
+      kpsent: 0,
+      calls: 0,
+      reached: 0,
+      meetings: 0,
+      scheduled: 0,
+      callsGoal: 70,
+      reachedGoal: 25
+    };
+
+    const ctx = document.getElementById("activityChart").getContext("2d");
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ["Звонки", "Дозвоны", "Встречи", "Назначено", "КП Назначено", "КП Проведено"],
+        datasets: [{
+          label: 'Текущие значения',
+          data: [0, 0, 0, 0, 0, 0],
+          backgroundColor: '#933DC9'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Текущая активность'
+          }
+        }
+      }
+    });
+
+    function change(metric, delta) {
+      if (!(metric in data)) return;
+      data[metric] = Math.max(0, data[metric] + delta);
+      adjustGoals();
+      update();
+    }
+
+    function adjustGoals() {
+      if (data.meetings >= 3) {
+        data.callsGoal = 30;
+        data.reachedGoal = 10;
+      } else if (data.meetings == 2) {
+        data.callsGoal = 50;
+        data.reachedGoal = 15;
+      } else if (data.meetings == 1) {
+        data.callsGoal = 60;
+        data.reachedGoal = 20;
+      } else {
+        data.callsGoal = 70;
+        data.reachedGoal = 25;
+      }
+    }
+
+    function update() {
+      document.getElementById('kpset').textContent = data.kpset;
+      document.getElementById('kpsent').textContent = data.kpsent;
+      document.getElementById("calls").textContent = data.calls;
+      document.getElementById("reached").textContent = data.reached;
+      document.getElementById("meetings").textContent = data.meetings;
+      document.getElementById("scheduled").textContent = data.scheduled;
+      document.getElementById("callsGoal").textContent = data.callsGoal;
+      document.getElementById("reachedGoal").textContent = data.reachedGoal;
+
+      chart.data.datasets[0].data = [
+        data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
+      ];
+      chart.update();
+    }
+
+    update();
+  </script>
+</body>
+</html>
