@@ -8,130 +8,193 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #1b002d;
+      background: radial-gradient(circle at top, #53118F, #140022 80%);
       color: white;
+      font-family: sans-serif;
       margin: 0;
-      padding: 1rem;
+      padding: 2rem;
     }
-    .card {
-      background: #2e004d;
-      border-radius: 10px;
-      padding: 1rem;
+    .header {
+      font-size: 1.5rem;
       margin-bottom: 1rem;
     }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(147, 61, 201, 0.3);
+    }
+    .buttons {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
     button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
       background: #933DC9;
       color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 10px;
-      cursor: pointer;
     }
-    input[type="number"], input[type="text"] {
-      padding: 5px;
-      border-radius: 5px;
-      border: none;
-      background: #31114d;
-      color: white;
-      margin-left: 10px;
-      width: 60px;
-      text-align: center;
-    }
-    .hidden { display: none; }
-    .metric-row {
-      margin-bottom: 0.8rem;
+    .chart-container {
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
-  <div id="login" class="card">
-    <h2>Введите имя</h2>
-    <input type="text" id="username" />
-    <button onclick="saveUser()">Войти</button>
+  <div class="header">
+    Добро пожаловать, <span id="username"></span>!
   </div>
 
-  <div id="app" class="hidden">
-    <h2>Добро пожаловать, <span id="greeting"></span>!</h2>
-
+  <div class="metrics">
     <div class="card">
-      <h3>Сегодня</h3>
-      <div id="metrics"></div>
+      <div>📞 Звонки: <span id="calls">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'calls\', this.value)" /> / <span id="callsGoal">70</span></div>
+      <div class="buttons">
+        <button onclick="change('calls', 1)">+ Звонок</button>
+        <button onclick="change('calls', -1)">– Звонок</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📲 Дозвоны: <span id="reached">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'reached\', this.value)" /> / <span id="reachedGoal">25</span></div>
+      <div class="buttons">
+        <button onclick="change('reached', 1)">+ Дозвон</button>
+        <button onclick="change('reached', -1)">– Дозвон</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>🤝 Встречи: <span id="meetings">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'meetings\', this.value)" /></div>
+      <div class="buttons">
+        <button onclick="change('meetings', 1)">+ Встреча</button>
+        <button onclick="change('meetings', -1)">– Встреча</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📅 Назначено: <span id="scheduled">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'scheduled\', this.value)" /></div>
+      <div class="buttons">
+        <button onclick="change('scheduled', 1)">+ Назначено</button>
+        <button onclick="change('scheduled', -1)">– Назначено</button>
+      </div>
+    </div>
+  </div>
+
+  
+    <div class="card">
+      <div>📝 Назначено КП: <span id="kpset">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpset\', this.value)" /></div>
+      <div class="buttons">
+        <button onclick="change('kpset', 1)">+ Назначено</button>
+        <button onclick="change('kpset', -1)">– Назначено</button>
+      </div>
+    </div>
+    <div class="card">
+      <div>📨 Проведено КП: <span id="kpsent">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpsent\', this.value)" /></div>
+      <div class="buttons">
+        <button onclick="change('kpsent', 1)">+ Проведено</button>
+        <button onclick="change('kpsent', -1)">– Проведено</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Советы</h3>
-      <p><strong>Звонки:</strong> <span id="adviceMain">—</span></p>
-      <p><strong>Дозвоны:</strong> <span id="adviceExtra">—</span></p>
-    </div>
+  <div class="chart-container">
+    <canvas id="activityChart"></canvas>
   </div>
 
   <script>
-    const metrics = ["calls", "reached"];
-    const labels = { calls: "Звонки", reached: "Дозвоны" };
-    const today = new Date().toISOString().split("T")[0];
-    let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
-    if (!data[today]) data[today] = { calls: 0, reached: 0 };
+    const user = localStorage.getItem("userName");
+    if (!user) window.location.href = "login.html";
+    document.getElementById("username").textContent = user;
 
-    function saveUser() {
-      const username = document.getElementById("username").value.trim();
-      if (username) {
-        localStorage.setItem("sf_user", username);
-        showApp();
+    let data = {
+      kpset: 0,
+      kpsent: 0,
+      calls: 0,
+      reached: 0,
+      meetings: 0,
+      scheduled: 0,
+      callsGoal: 70,
+      reachedGoal: 25
+    };
+
+    const ctx = document.getElementById("activityChart").getContext("2d");
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ["Звонки", "Дозвоны", "Встречи", "Назначено", "КП Назначено", "КП Проведено"],
+        datasets: [{
+          label: 'Текущие значения',
+          data: [0, 0, 0, 0, 0, 0],
+          backgroundColor: '#933DC9'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Текущая активность'
+          }
+        }
+      }
+    });
+
+    function change(metric, delta) {
+      if (!(metric in data)) return;
+      data[metric] = Math.max(0, data[metric] + delta);
+      adjustGoals();
+      update();
+    }
+
+    function adjustGoals() {
+      if (data.meetings >= 3) {
+        data.callsGoal = 30;
+        data.reachedGoal = 10;
+      } else if (data.meetings == 2) {
+        data.callsGoal = 50;
+        data.reachedGoal = 15;
+      } else if (data.meetings == 1) {
+        data.callsGoal = 60;
+        data.reachedGoal = 20;
+      } else {
+        data.callsGoal = 70;
+        data.reachedGoal = 25;
       }
     }
 
-    function showApp() {
-      const username = localStorage.getItem("sf_user");
-      document.getElementById("greeting").textContent = username;
-      document.getElementById("login").classList.add("hidden");
-      document.getElementById("app").classList.remove("hidden");
-      loadUI();
+    function update() {
+      document.getElementById('kpset').textContent = data.kpset;
+      document.getElementById('kpsent').textContent = data.kpsent;
+      document.getElementById("calls").textContent = data.calls;
+      document.getElementById("reached").textContent = data.reached;
+      document.getElementById("meetings").textContent = data.meetings;
+      document.getElementById("scheduled").textContent = data.scheduled;
+      document.getElementById("callsGoal").textContent = data.callsGoal;
+      document.getElementById("reachedGoal").textContent = data.reachedGoal;
+
+      chart.data.datasets[0].data = [
+        data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
+      ];
+      chart.update();
     }
 
-    function loadUI() {
-      const container = document.getElementById("metrics");
-      container.innerHTML = "";
-      metrics.forEach(key => {
-        const row = document.createElement("div");
-        row.className = "metric-row";
-        row.innerHTML = \`
-          <label>\${labels[key]}:</label>
-          <input type="number" id="\${key}Val" value="\${data[today][key] || 0}" />
-          <button onclick="saveMetric('\${key}')">Ввод</button>
-        \`;
-        container.appendChild(row);
-      });
-      updateAdvice();
-    }
-
-    function saveMetric(key) {
-      const val = parseInt(document.getElementById(key + "Val").value) || 0;
-      data[today][key] = val;
-      localStorage.setItem("sf_data", JSON.stringify(data));
-      updateAdvice();
-    }
-
-    function updateAdvice() {
-      const c = data[today].calls || 0;
-      const r = data[today].reached || 0;
-      document.getElementById("adviceMain").textContent =
-        c <= 20 ? "Ты вообще работать собираешься?" :
-        c <= 40 ? "Ну неплохо, чёрт." :
-        c <= 60 ? "А ты что-то можешь." :
-        c <= 80 ? "Молодец, парашник." :
-        "Отберите у него телефон!";
-      document.getElementById("adviceExtra").textContent =
-        r <= 5 ? "Ты зачем в офис приехал?" :
-        r <= 10 ? "Ты там точно работаешь?" :
-        r <= 15 ? "Неплохо, парашник." :
-        r <= 20 ? "Давай, поднажми." :
-        r <= 25 ? "Молодец." :
-        "Остановись, ты не в колл-центре.";
-    }
-
-    // Init
-    if (localStorage.getItem("sf_user")) showApp();
+    update();
   </script>
+
+<script>
+function setValue(metric, val) {
+  val = parseInt(val);
+  if (!isNaN(val)) {
+    data[metric] = Math.max(0, val);
+    adjustGoals();
+    update();
+  }
+}
+</script>
+
 </body>
 </html>
