@@ -2,42 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Sales Focus</title>
+  <title>Проверка авторизации</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background: #1b002d; color: white; font-family: sans-serif; padding: 1rem; }
-    input, button, select {
-      padding: 6px; font-size: 16px; border-radius: 5px;
-      border: none; margin: 5px;
-    }
-    input[type="number"] {
-      width: 60px; background: #31114d; color: white; text-align: center;
-    }
-    button { background: #933DC9; color: white; cursor: pointer; }
-    .card { background: #2e004d; padding: 1rem; margin: 1rem 0; border-radius: 10px; }
-    .metric-row {
-      margin: 10px 0; display: flex; align-items: center; gap: 10px;
-    }
-    .tabs button.active { background: #4b0082; }
-    .tabs button { background: #31114d; color: white; }
-    .tabs { margin-bottom: 1rem; }
-    .hidden { display: none; }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #555; padding: 6px; text-align: center;
-    }
-    th { background: #31114d; }
+    body { background: #1b002d; color: white; font-family: sans-serif; padding: 2rem; }
     #loginModal {
       position: fixed; top:0;left:0;right:0;bottom:0;
       background: rgba(0,0,0,0.95);
       display: flex; align-items: center; justify-content: center;
       z-index: 1000;
     }
-    #loginModal input { width: 200px; font-size: 18px; padding: 10px; }
-    #loginModal button { font-size: 18px; padding: 10px 20px; }
+    input, button {
+      font-size: 18px; padding: 10px; margin: 5px;
+      border-radius: 5px; border: none;
+    }
+    input { background: #31114d; color: white; }
+    button { background: #933DC9; color: white; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -49,60 +29,18 @@
   </div>
 </div>
 
-<h2>Добро пожаловать, <span id="userWelcome"></span></h2>
-<div class="tabs">
-  <button onclick="showTab('today')" id="tabToday" class="active">Сегодня</button>
-  <button onclick="showTab('analytics')" id="tabAnalytics">Аналитика</button>
-</div>
-
-<div id="todayTab">
-  <div class="card">
-    <div id="metrics"></div>
-  </div>
-  <div class="card">
-    <h3>Советы</h3>
-    <p><strong>Звонки:</strong> <span id="adviceMain">–</span></p>
-    <p><strong>Дозвоны:</strong> <span id="adviceExtra">–</span></p>
-  </div>
-</div>
-<div id="analyticsTab" class="hidden">
-  <div class="card">
-    <label for="rangeSelect">Период:</label>
-    <select id="rangeSelect">
-      <option value="day">День</option>
-      <option value="week">Неделя</option>
-      <option value="month">Месяц</option>
-    </select>
-    <canvas id="myChart" height="100"></canvas>
-    <table>
-      <thead>
-        <tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th>
-        <th>Назначено</th><th>КП Назначено</th><th>КП Проведено</th></tr>
-      </thead>
-      <tbody id="historyTable"></tbody>
-    </table>
-  </div>
-</div>
+<h1>Добро пожаловать, <span id="userWelcome"></span></h1>
 
 <script>
-const today = new Date().toISOString().split("T")[0];
-const metrics = ["calls","reached","meetings","scheduled","kpSet","kpDone"];
-const labels = {
-  calls:"Звонки", reached:"Дозвоны", meetings:"Встречи",
-  scheduled:"Назначено встреч", kpSet:"КП Назначено", kpDone:"КП Проведено"
-};
-let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
-if (!data[today]) data[today] = Object.fromEntries(metrics.map(k => [k,0]));
-
-function handleKey(e) { if (e.key === "Enter") saveUsername(); }
-
+function handleKey(e) {
+  if (e.key === "Enter") saveUsername();
+}
 function saveUsername() {
   const name = document.getElementById("username").value.trim();
   if (name) {
     localStorage.setItem("sf_username", name);
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("userWelcome").textContent = name;
-    renderMetrics(); updateAdvice(); updateAnalytics();
   }
 }
 window.onload = () => {
@@ -110,91 +48,8 @@ window.onload = () => {
   if (name) {
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("userWelcome").textContent = name;
-    renderMetrics(); updateAdvice(); updateAnalytics();
   }
 };
-
-function renderMetrics() {
-  const el = document.getElementById("metrics");
-  el.innerHTML = "";
-  metrics.forEach(key => {
-    const val = data[today][key] || 0;
-    el.innerHTML += \`
-      <div class="metric-row">
-        <label>\${labels[key]}</label>
-        <button onclick="adjust('\${key}',-1)">–</button>
-        <input id="\${key}Input" value="\${val}" type="number">
-        <button onclick="adjust('\${key}',1)">+</button>
-        <button onclick="saveMetric('\${key}')">Ввод</button>
-      </div>\`;
-  });
-}
-
-function adjust(key, d) {
-  const el = document.getElementById(key+"Input");
-  el.value = Math.max(0, parseInt(el.value||'0') + d);
-}
-
-function saveMetric(key) {
-  const val = parseInt(document.getElementById(key+"Input").value)||0;
-  data[today][key] = val;
-  localStorage.setItem("sf_data", JSON.stringify(data));
-  updateAdvice(); updateAnalytics();
-}
-
-function updateAdvice() {
-  const c = data[today].calls || 0;
-  const r = data[today].reached || 0;
-  document.getElementById("adviceMain").textContent =
-    c <= 20 ? "Ты вообще работать собираешься?" :
-    c <= 40 ? "Ну неплохо, чёрт." :
-    c <= 60 ? "А ты что-то можешь." :
-    c <= 80 ? "Молодец, парашник." : "Отберите у него телефон!";
-  document.getElementById("adviceExtra").textContent =
-    r <= 5 ? "Ты зачем в офис приехал?" :
-    r <= 10 ? "Ты там точно работаешь?" :
-    r <= 15 ? "Неплохо, парашник." :
-    r <= 20 ? "Давай, поднажми." :
-    r <= 25 ? "Молодец." : "Остановись, ты не в колл-центре.";
-}
-
-function showTab(tab) {
-  document.getElementById("todayTab").classList.toggle("hidden", tab !== "today");
-  document.getElementById("analyticsTab").classList.toggle("hidden", tab !== "analytics");
-  document.getElementById("tabToday").classList.toggle("active", tab === "today");
-  document.getElementById("tabAnalytics").classList.toggle("active", tab === "analytics");
-  if (tab === "analytics") updateAnalytics();
-}
-
-let chart;
-function updateAnalytics() {
-  const ctx = document.getElementById("myChart").getContext("2d");
-  const all = JSON.parse(localStorage.getItem("sf_data") || "{}");
-  const labels = [], calls = [], reached = [];
-  const tbody = document.getElementById("historyTable");
-  tbody.innerHTML = "";
-  Object.keys(all).sort().forEach(date => {
-    const row = all[date];
-    labels.push(date.slice(5));
-    calls.push(row.calls||0);
-    reached.push(row.reached||0);
-    tbody.innerHTML += \`<tr><td>\${date}</td><td>\${row.calls||0}</td><td>\${row.reached||0}</td>
-      <td>\${row.meetings||0}</td><td>\${row.scheduled||0}</td><td>\${row.kpSet||0}</td><td>\${row.kpDone||0}</td></tr>\`;
-  });
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels, datasets: [
-        { label: "Звонки", data: calls, borderColor: "#933DC9", tension: 0.3 },
-        { label: "Дозвоны", data: reached, borderColor: "#26d9f0", tension: 0.3 }
-      ]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
-  });
-}
 </script>
 </body>
 </html>
-
-
