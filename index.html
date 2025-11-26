@@ -311,6 +311,50 @@
       font-weight: bold;
     }
 
+    /* Цели на день */
+    .targets-block {
+      margin-top: 20px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #1b1424;
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px;
+    }
+
+    .targets-title {
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      font-weight: bold;
+    }
+
+    .targets-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .targets-table th,
+    .targets-table td {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 4px 6px;
+      text-align: center;
+    }
+
+    .targets-table th {
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    .targets-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .targets-metric-name {
+      text-align: left !important;
+      white-space: nowrap;
+    }
+
     /* Аналитика */
 
     .period-tabs {
@@ -364,6 +408,13 @@
       margin-bottom: 4px;
     }
 
+    .analytics-section-title {
+      margin-top: 18px;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
     .chart-wrapper {
       margin-top: 18px;
       padding: 12px 14px 10px;
@@ -407,6 +458,67 @@
       margin-right: 4px;
     }
 
+    /* История */
+
+    .history-block {
+      margin-top: 18px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: #1b1424;
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px;
+    }
+
+    .history-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .history-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .history-filters label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .history-filters input[type="date"] {
+      background: #150f1e;
+      border-radius: 8px;
+      border: 1px solid #32263e;
+      color: var(--text-main);
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+
+    .history-button {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: var(--text-main);
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .history-button:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .history-note {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
     /* Снежинки */
 
     .snowflake {
@@ -427,14 +539,23 @@
     /* Аналитика по центру, прямоугольная */
 
     #analyticsScreen .dashboard-card {
-      max-width: 600px;
+      max-width: 650px;
       margin: 0 auto;
       border-radius: 16px;
     }
 
     #analyticsScreen .analytics-grid {
-      grid-template-columns: 1fr;
-      margin-top: 20px;
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-top: 12px;
+    }
+
+    #analyticsScreen .score-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #historyGrid {
+      margin-top: 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     /* Встроенный виджет подсказок над метриками */
@@ -525,7 +646,7 @@
             <div class="metric-label">Назначено встреч</div>
             <div class="metric-controls">
               <button class="metric-btn" data-action="dec">-</button>
-              <input type="number" class="metric-input" value="0" min="0" />
+              <input type="number" id="metricMeetPlan" class="metric-input" value="0" min="0" />
               <button class="metric-btn" data-action="inc">+</button>
             </div>
           </div>
@@ -534,7 +655,7 @@
             <div class="metric-label">Проведено встреч</div>
             <div class="metric-controls">
               <button class="metric-btn" data-action="dec">-</button>
-              <input type="number" class="metric-input" value="0" min="0" />
+              <input type="number" id="metricMeetDone" class="metric-input" value="0" min="0" />
               <button class="metric-btn" data-action="inc">+</button>
             </div>
           </div>
@@ -543,7 +664,7 @@
             <div class="metric-label">Отправлено КП</div>
             <div class="metric-controls">
               <button class="metric-btn" data-action="dec">-</button>
-              <input type="number" class="metric-input" value="0" min="0" />
+              <input type="number" id="metricKP" class="metric-input" value="0" min="0" />
               <button class="metric-btn" data-action="inc">+</button>
             </div>
           </div>
@@ -552,14 +673,73 @@
             <div class="metric-label">Получено оплат</div>
             <div class="metric-controls">
               <button class="metric-btn" data-action="dec">-</button>
-              <input type="number" class="metric-input" value="0" min="0" />
+              <input type="number" id="metricDeals" class="metric-input" value="0" min="0" />
               <button class="metric-btn" data-action="inc">+</button>
             </div>
           </div>
         </div>
 
+        <div class="targets-block">
+          <div class="targets-title">Цели на сегодня</div>
+          <table class="targets-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>12:00</th>
+                <th>14:00</th>
+                <th>16:00</th>
+                <th>19:00</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="targets-metric-name">Количество наборов</td>
+                <td>30</td>
+                <td>50</td>
+                <td>70</td>
+                <td>70</td>
+              </tr>
+              <tr>
+                <td class="targets-metric-name">Активные звонки</td>
+                <td>10</td>
+                <td>15</td>
+                <td>20</td>
+                <td>25</td>
+              </tr>
+              <tr>
+                <td class="targets-metric-name">Назначено встреч</td>
+                <td>1</td>
+                <td>2</td>
+                <td>2</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td class="targets-metric-name">Проведено встреч</td>
+                <td>0</td>
+                <td>1</td>
+                <td>2</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td class="targets-metric-name">Отправлено КП</td>
+                <td>0</td>
+                <td>0</td>
+                <td>1</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td class="targets-metric-name">Получено оплат</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <p class="footer-note">
-          Подсказка: метрики можно настроить под свои этапы воронки. Значения сохраняются до перезагрузки страницы.
+          Подсказка: метрики можно настроить под свои этапы воронки. Значения сохраняются, аналитика строится по выбранному периоду.
         </p>
       </div>
     </section>
@@ -616,6 +796,34 @@
             </div>
           </div>
 
+          <div class="analytics-section-title">Оценка по 5-балльной шкале (день)</div>
+          <div class="analytics-grid score-grid" id="scoreGrid">
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreSets">0</div>
+              Наборы (1–5)
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreCalls">0</div>
+              Активные звонки (1–5)
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreMeetPlan">0</div>
+              Назначено встреч (1–5)
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreMeetDone">0</div>
+              Проведено встреч (1–5)
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreKP">0</div>
+              Отправлено КП (1–5)
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="scoreDeals">0</div>
+              Оплаты (1–5)
+            </div>
+          </div>
+
           <div class="chart-wrapper">
             <div class="chart-title">График по всем метрикам за период</div>
             <svg id="metricsChart" viewBox="0 0 320 160" preserveAspectRatio="none">
@@ -636,6 +844,42 @@
               <span>Получено оплат</span>
             </div>
           </div>
+
+          <div class="history-block">
+            <div class="history-title">История</div>
+            <div class="history-filters">
+              <label>С <input type="date" id="historyFrom" /></label>
+              <label>По <input type="date" id="historyTo" /></label>
+              <button class="history-button" id="historyShow">Показать</button>
+            </div>
+            <div class="analytics-grid" id="historyGrid">
+              <div class="analytics-card">
+                <div class="analytics-value" id="hSets">0</div>
+                Среднее количество наборов
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-value" id="hCalls">0</div>
+                Среднее активных звонков
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-value" id="hMeetPlan">0</div>
+                Среднее назначено встреч
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-value" id="hMeetDone">0</div>
+                Среднее проведено встреч
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-value" id="hKP">0</div>
+                Среднее отправлено КП
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-value" id="hDeals">0</div>
+                Среднее оплат
+              </div>
+            </div>
+            <div class="history-note">История хранится локально в браузере и считается по сохранённым измерениям.</div>
+          </div>
         </div>
       </div>
     </section>
@@ -654,6 +898,11 @@
 
     const metricSets = document.getElementById('metricSets');
     const metricCalls = document.getElementById('metricCalls');
+    const metricMeetPlan = document.getElementById('metricMeetPlan');
+    const metricMeetDone = document.getElementById('metricMeetDone');
+    const metricKP = document.getElementById('metricKP');
+    const metricDeals = document.getElementById('metricDeals');
+
     const metricInputs = document.querySelectorAll('.metric-input');
 
     const inlineAdvice = document.getElementById('inlineAdvice');
@@ -670,6 +919,20 @@
     const anKP = document.getElementById('anKP');
     const anDeals = document.getElementById('anDeals');
 
+    const scoreSets = document.getElementById('scoreSets');
+    const scoreCalls = document.getElementById('scoreCalls');
+    const scoreMeetPlan = document.getElementById('scoreMeetPlan');
+    const scoreMeetDone = document.getElementById('scoreMeetDone');
+    const scoreKP = document.getElementById('scoreKP');
+    const scoreDeals = document.getElementById('scoreDeals');
+
+    const hSets = document.getElementById('hSets');
+    const hCalls = document.getElementById('hCalls');
+    const hMeetPlan = document.getElementById('hMeetPlan');
+    const hMeetDone = document.getElementById('hMeetDone');
+    const hKP = document.getElementById('hKP');
+    const hDeals = document.getElementById('hDeals');
+
     const barSets = document.getElementById('barSets');
     const barCalls = document.getElementById('barCalls');
     const barMeetPlan = document.getElementById('barMeetPlan');
@@ -680,10 +943,24 @@
     const periodButtons = document.querySelectorAll('.period-btn');
     const analyticsSummary = document.getElementById('analyticsSummary');
 
+    const historyFrom = document.getElementById('historyFrom');
+    const historyTo = document.getElementById('historyTo');
+    const historyShow = document.getElementById('historyShow');
+
     let currentPeriod = 'day';
     let currentUserName = '';
     const STORAGE_KEY = 'salesMetricsDemo';
+    const HISTORY_KEY = 'salesMetricsHistory';
     const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzLfNCuXRKjC7Wnx68KoDefflX81HuQD4HdxOhwx6Mb8LEm/exec';
+
+    const TARGET_19 = {
+      sets: 70,
+      calls: 25,
+      meetPlan: 2,
+      meetDone: 2,
+      kp: 2,
+      deals: 1
+    };
 
     // Вход
     loginButton.addEventListener('click', () => {
@@ -774,6 +1051,26 @@
       inlineAdvice.style.display = 'none';
     });
 
+    // Калькуляция оценки 1–5
+    function calcScore(value, target) {
+      if (!target || target <= 0) return 1;
+      const ratio = value / target;
+      if (ratio <= 0.2) return 1;
+      if (ratio <= 0.4) return 2;
+      if (ratio <= 0.6) return 3;
+      if (ratio <= 0.8) return 4;
+      return 5;
+    }
+
+    function updateScoresDay(sets, calls, meetPlan, meetDone, kp, deals) {
+      scoreSets.textContent = calcScore(sets, TARGET_19.sets);
+      scoreCalls.textContent = calcScore(calls, TARGET_19.calls);
+      scoreMeetPlan.textContent = calcScore(meetPlan, TARGET_19.meetPlan);
+      scoreMeetDone.textContent = calcScore(meetDone, TARGET_19.meetDone);
+      scoreKP.textContent = calcScore(kp, TARGET_19.kp);
+      scoreDeals.textContent = calcScore(deals, TARGET_19.deals);
+    }
+
     // Аналитика
     periodButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -796,12 +1093,12 @@
 
     async function autoSaveToSheet() {
       if (!currentUserName) return;
-      const sets = parseInt(metricInputs[0].value || '0', 10);
-      const calls = parseInt(metricInputs[1].value || '0', 10);
-      const meetPlan = parseInt(metricInputs[2].value || '0', 10);
-      const meetDone = parseInt(metricInputs[3].value || '0', 10);
-      const kp = parseInt(metricInputs[4].value || '0', 10);
-      const deals = parseInt(metricInputs[5].value || '0', 10);
+      const sets = parseInt(metricSets.value || '0', 10);
+      const calls = parseInt(metricCalls.value || '0', 10);
+      const meetPlan = parseInt(metricMeetPlan.value || '0', 10);
+      const meetDone = parseInt(metricMeetDone.value || '0', 10);
+      const kp = parseInt(metricKP.value || '0', 10);
+      const deals = parseInt(metricDeals.value || '0', 10);
 
       const payload = { user: currentUserName, sets, calls, meetPlan, meetDone, kp, deals };
 
@@ -817,13 +1114,101 @@
       }
     }
 
+    function saveHistorySnapshot() {
+      if (!currentUserName) return;
+      const sets = parseInt(metricSets.value || '0', 10);
+      const calls = parseInt(metricCalls.value || '0', 10);
+      const meetPlan = parseInt(metricMeetPlan.value || '0', 10);
+      const meetDone = parseInt(metricMeetDone.value || '0', 10);
+      const kp = parseInt(metricKP.value || '0', 10);
+      const deals = parseInt(metricDeals.value || '0', 10);
+
+      const now = new Date();
+      const date = now.toISOString().slice(0, 10);
+      const entry = {
+        user: currentUserName,
+        date,
+        timestamp: now.toISOString(),
+        metrics: { sets, calls, meetPlan, meetDone, kp, deals }
+      };
+
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        arr.push(entry);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+      } catch (e) {
+        console.error('Не удалось сохранить историю', e);
+      }
+    }
+
+    function applyHistoryFilter() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) {
+          hSets.textContent = 0;
+          hCalls.textContent = 0;
+          hMeetPlan.textContent = 0;
+          hMeetDone.textContent = 0;
+          hKP.textContent = 0;
+          hDeals.textContent = 0;
+          return;
+        }
+        const arr = JSON.parse(raw).filter(e => e.user === currentUserName);
+        if (!arr.length) {
+          hSets.textContent = 0;
+          hCalls.textContent = 0;
+          hMeetPlan.textContent = 0;
+          hMeetDone.textContent = 0;
+          hKP.textContent = 0;
+          hDeals.textContent = 0;
+          return;
+        }
+
+        const from = historyFrom.value || '0000-01-01';
+        const to = historyTo.value || '9999-12-31';
+
+        const filtered = arr.filter(e => e.date >= from && e.date <= to);
+        if (!filtered.length) {
+          hSets.textContent = 0;
+          hCalls.textContent = 0;
+          hMeetPlan.textContent = 0;
+          hMeetDone.textContent = 0;
+          hKP.textContent = 0;
+          hDeals.textContent = 0;
+          return;
+        }
+
+        let sSets = 0, sCalls = 0, sMeetPlan = 0, sMeetDone = 0, sKP = 0, sDeals = 0;
+        filtered.forEach(e => {
+          sSets += e.metrics.sets || 0;
+          sCalls += e.metrics.calls || 0;
+          sMeetPlan += e.metrics.meetPlan || 0;
+          sMeetDone += e.metrics.meetDone || 0;
+          sKP += e.metrics.kp || 0;
+          sDeals += e.metrics.deals || 0;
+        });
+        const n = filtered.length || 1;
+        hSets.textContent = Math.round(sSets / n);
+        hCalls.textContent = Math.round(sCalls / n);
+        hMeetPlan.textContent = Math.round(sMeetPlan / n);
+        hMeetDone.textContent = Math.round(sMeetDone / n);
+        hKP.textContent = Math.round(sKP / n);
+        hDeals.textContent = Math.round(sDeals / n);
+      } catch (e) {
+        console.error('Ошибка фильтрации истории', e);
+      }
+    }
+
+    historyShow.addEventListener('click', applyHistoryFilter);
+
     function updateAnalytics() {
-      const sets = parseInt(metricInputs[0].value || '0', 10);
-      const calls = parseInt(metricInputs[1].value || '0', 10);
-      const meetPlan = parseInt(metricInputs[2].value || '0', 10);
-      const meetDone = parseInt(metricInputs[3].value || '0', 10);
-      const kp = parseInt(metricInputs[4].value || '0', 10);
-      const deals = parseInt(metricInputs[5].value || '0', 10);
+      const sets = parseInt(metricSets.value || '0', 10);
+      const calls = parseInt(metricCalls.value || '0', 10);
+      const meetPlan = parseInt(metricMeetPlan.value || '0', 10);
+      const meetDone = parseInt(metricMeetDone.value || '0', 10);
+      const kp = parseInt(metricKP.value || '0', 10);
+      const deals = parseInt(metricDeals.value || '0', 10);
 
       const rawValues = [sets, calls, meetPlan, meetDone, kp, deals];
       const avg = rawValues.reduce((sum, v) => sum + v, 0) / (rawValues.length || 1);
@@ -872,6 +1257,9 @@
         vals.deals
       ]);
 
+      // Оценки по дню всегда отталкиваются от дневных значений
+      updateScoresDay(sets, calls, meetPlan, meetDone, kp, deals);
+
       if (currentUserName) {
         const data = {
           user: currentUserName,
@@ -885,6 +1273,7 @@
         }
       }
 
+      saveHistorySnapshot();
       autoSaveToSheet();
     }
 
@@ -911,17 +1300,24 @@
         if (data.user) {
           loginNameInput.value = data.user;
           currentUserName = data.user;
+          userPill.textContent = `Здравствуйте, ${data.user}`;
+          userPillAnalytics.textContent = `Здравствуйте, ${data.user}`;
+
+          // сразу показываем дашборд, без повторного логина
+          loginScreen.classList.remove('active');
+          dashboardScreen.classList.add('active');
         }
         if (data.metrics) {
-          metricInputs[0].value = data.metrics.sets ?? 0;
-          metricInputs[1].value = data.metrics.calls ?? 0;
-          metricInputs[2].value = data.metrics.meetPlan ?? 0;
-          metricInputs[3].value = data.metrics.meetDone ?? 0;
-          metricInputs[4].value = data.metrics.kp ?? 0;
-          metricInputs[5].value = data.metrics.deals ?? 0;
+          metricSets.value = data.metrics.sets ?? 0;
+          metricCalls.value = data.metrics.calls ?? 0;
+          metricMeetPlan.value = data.metrics.meetPlan ?? 0;
+          metricMeetDone.value = data.metrics.meetDone ?? 0;
+          metricKP.value = data.metrics.kp ?? 0;
+          metricDeals.value = data.metrics.deals ?? 0;
         }
         updateAdvice();
         updateAnalytics();
+        applyHistoryFilter();
       } catch (e) {
         console.error('Ошибка восстановления данных', e);
       }
@@ -945,5 +1341,4 @@
   </script>
 </body>
 </html>
-
 
