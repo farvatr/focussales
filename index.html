@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,193 +7,232 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      background: radial-gradient(circle at top, #53118F, #140022 80%);
+      font-family: Arial, sans-serif;
+      background: #1b002d;
       color: white;
-      font-family: sans-serif;
       margin: 0;
-      padding: 2rem;
-    }
-    .header {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-    .card {
-      background: rgba(0, 0, 0, 0.5);
       padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(147, 61, 201, 0.3);
     }
-    .buttons {
-      margin-top: 0.5rem;
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
+    input, button, select {
+      font-size: 16px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      margin: 5px;
+    }
+    input[type="number"] {
+      width: 60px;
+      background: #31114d;
+      color: white;
+      text-align: center;
     }
     button {
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
       background: #933DC9;
       color: white;
+      cursor: pointer;
     }
-    .chart-container {
-      margin-top: 2rem;
+    .card {
+      background: #2e004d;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 10px;
+    }
+    .metric-row {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tabs button.active {
+      background: #4b0082;
+    }
+    .tabs button {
+      background: #31114d;
+      color: white;
+    }
+    .tabs {
+      margin-bottom: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #555;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background: #31114d;
+    }
+    #loginModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #loginModal input {
+      width: 200px;
+      font-size: 18px;
+      padding: 10px;
+    }
+    #loginModal button {
+      font-size: 18px;
+      padding: 10px 20px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    Добро пожаловать, <span id="username"></span>!
-  </div>
-
-  <div class="metrics">
-    <div class="card">
-      <div>📞 Звонки: <span id="calls">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'calls\', this.value)" /> / <span id="callsGoal">70</span></div>
-      <div class="buttons">
-        <button onclick="change('calls', 1)">+ Звонок</button>
-        <button onclick="change('calls', -1)">– Звонок</button>
-      </div>
-    </div>
-    <div class="card">
-      <div>📲 Дозвоны: <span id="reached">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'reached\', this.value)" /> / <span id="reachedGoal">25</span></div>
-      <div class="buttons">
-        <button onclick="change('reached', 1)">+ Дозвон</button>
-        <button onclick="change('reached', -1)">– Дозвон</button>
-      </div>
-    </div>
-    <div class="card">
-      <div>🤝 Встречи: <span id="meetings">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'meetings\', this.value)" /></div>
-      <div class="buttons">
-        <button onclick="change('meetings', 1)">+ Встреча</button>
-        <button onclick="change('meetings', -1)">– Встреча</button>
-      </div>
-    </div>
-    <div class="card">
-      <div>📅 Назначено: <span id="scheduled">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'scheduled\', this.value)" /></div>
-      <div class="buttons">
-        <button onclick="change('scheduled', 1)">+ Назначено</button>
-        <button onclick="change('scheduled', -1)">– Назначено</button>
-      </div>
+  <div id="loginModal">
+    <div>
+      <h2>Введите имя</h2>
+      <input id="username" type="text" placeholder="Ваше имя">
+      <button onclick="saveUsername()">Войти</button>
     </div>
   </div>
 
-  
-    <div class="card">
-      <div>📝 Назначено КП: <span id="kpset">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpset\', this.value)" /></div>
-      <div class="buttons">
-        <button onclick="change('kpset', 1)">+ Назначено</button>
-        <button onclick="change('kpset', -1)">– Назначено</button>
-      </div>
-    </div>
-    <div class="card">
-      <div>📨 Проведено КП: <span id="kpsent">0</span><br/><input type="number" style="margin-top:5px;width:80%;" placeholder="Ввести вручную" onchange="setValue(\'kpsent\', this.value)" /></div>
-      <div class="buttons">
-        <button onclick="change('kpsent', 1)">+ Проведено</button>
-        <button onclick="change('kpsent', -1)">– Проведено</button>
-      </div>
-    </div>
-
-  <div class="chart-container">
-    <canvas id="activityChart"></canvas>
+  <h2>Добро пожаловать, <span id="userWelcome"></span></h2>
+  <div class="tabs">
+    <button onclick="showTab('today')" id="tabToday" class="active">Сегодня</button>
+    <button onclick="showTab('analytics')" id="tabAnalytics">Аналитика</button>
   </div>
 
-  <script>
-    const user = localStorage.getItem("userName");
-    if (!user) window.location.href = "login.html";
-    document.getElementById("username").textContent = user;
-
-    let data = {
-      kpset: 0,
-      kpsent: 0,
-      calls: 0,
-      reached: 0,
-      meetings: 0,
-      scheduled: 0,
-      callsGoal: 70,
-      reachedGoal: 25
-    };
-
-    const ctx = document.getElementById("activityChart").getContext("2d");
-    const chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["Звонки", "Дозвоны", "Встречи", "Назначено", "КП Назначено", "КП Проведено"],
-        datasets: [{
-          label: 'Текущие значения',
-          data: [0, 0, 0, 0, 0, 0],
-          backgroundColor: '#933DC9'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: 'Текущая активность'
-          }
-        }
-      }
-    });
-
-    function change(metric, delta) {
-      if (!(metric in data)) return;
-      data[metric] = Math.max(0, data[metric] + delta);
-      adjustGoals();
-      update();
-    }
-
-    function adjustGoals() {
-      if (data.meetings >= 3) {
-        data.callsGoal = 30;
-        data.reachedGoal = 10;
-      } else if (data.meetings == 2) {
-        data.callsGoal = 50;
-        data.reachedGoal = 15;
-      } else if (data.meetings == 1) {
-        data.callsGoal = 60;
-        data.reachedGoal = 20;
-      } else {
-        data.callsGoal = 70;
-        data.reachedGoal = 25;
-      }
-    }
-
-    function update() {
-      document.getElementById('kpset').textContent = data.kpset;
-      document.getElementById('kpsent').textContent = data.kpsent;
-      document.getElementById("calls").textContent = data.calls;
-      document.getElementById("reached").textContent = data.reached;
-      document.getElementById("meetings").textContent = data.meetings;
-      document.getElementById("scheduled").textContent = data.scheduled;
-      document.getElementById("callsGoal").textContent = data.callsGoal;
-      document.getElementById("reachedGoal").textContent = data.reachedGoal;
-
-      chart.data.datasets[0].data = [
-        data.calls, data.reached, data.meetings, data.scheduled, data.kpset, data.kpsent
-      ];
-      chart.update();
-    }
-
-    update();
-  </script>
-
+  <div id="todayTab">
+    <div class="card">
+      <div id="metrics"></div>
+    </div>
+    <div class="card">
+      <h3>Советы</h3>
+      <p><strong>Звонки:</strong> <span id="adviceMain">–</span></p>
+      <p><strong>Дозвоны:</strong> <span id="adviceExtra">–</span></p>
+    </div>
+  </div>
+  <div id="analyticsTab" class="hidden">
+    <div class="card">
+      <label for="rangeSelect">Период:</label>
+      <select id="rangeSelect">
+        <option value="day">День</option>
+        <option value="week">Неделя</option>
+        <option value="month">Месяц</option>
+      </select>
+      <canvas id="myChart" height="100"></canvas>
+      <table>
+        <thead>
+          <tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th>
+          <th>Назначено</th><th>КП Назначено</th><th>КП Проведено</th></tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </div>
+  </div>
 <script>
-function setValue(metric, val) {
-  val = parseInt(val);
-  if (!isNaN(val)) {
-    data[metric] = Math.max(0, val);
-    adjustGoals();
-    update();
+const today = new Date().toISOString().split("T")[0];
+const metrics = ["calls","reached","meetings","scheduled","kpSet","kpDone"];
+const labels = {
+  calls:"Звонки", reached:"Дозвоны", meetings:"Встречи",
+  scheduled:"Назначено встреч", kpSet:"КП Назначено", kpDone:"КП Проведено"
+};
+let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
+if (!data[today]) data[today] = Object.fromEntries(metrics.map(k => [k,0]));
+
+function saveUsername() {
+  const name = document.getElementById("username").value.trim();
+  if (name) {
+    localStorage.setItem("sf_username", name);
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("userWelcome").textContent = name;
   }
 }
+window.onload = () => {
+  const name = localStorage.getItem("sf_username");
+  if (name) {
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("userWelcome").textContent = name;
+  }
+  renderMetrics(); updateAdvice(); updateAnalytics();
+};
+function renderMetrics() {
+  const el = document.getElementById("metrics");
+  el.innerHTML = "";
+  metrics.forEach(key => {
+    const val = data[today][key] || 0;
+    el.innerHTML += \`
+      <div class="metric-row">
+        <label>\${labels[key]}</label>
+        <button onclick="adjust('\${key}',-1)">–</button>
+        <input id="\${key}Input" value="\${val}" type="number">
+        <button onclick="adjust('\${key}',1)">+</button>
+        <button onclick="saveMetric('\${key}')">Ввод</button>
+      </div>\`;
+  });
+}
+function adjust(key, d) {
+  const el = document.getElementById(key+"Input");
+  el.value = Math.max(0, parseInt(el.value||'0') + d);
+}
+function saveMetric(key) {
+  const val = parseInt(document.getElementById(key+"Input").value)||0;
+  data[today][key] = val;
+  localStorage.setItem("sf_data", JSON.stringify(data));
+  updateAdvice(); updateAnalytics();
+}
+function updateAdvice() {
+  const c = data[today].calls || 0;
+  const r = data[today].reached || 0;
+  document.getElementById("adviceMain").textContent =
+    c <= 20 ? "Ты вообще работать собираешься?" :
+    c <= 40 ? "Ну неплохо, чёрт." :
+    c <= 60 ? "А ты что-то можешь." :
+    c <= 80 ? "Молодец, парашник." : "Отберите у него телефон!";
+  document.getElementById("adviceExtra").textContent =
+    r <= 5 ? "Ты зачем в офис приехал?" :
+    r <= 10 ? "Ты там точно работаешь?" :
+    r <= 15 ? "Неплохо, парашник." :
+    r <= 20 ? "Давай, поднажми." :
+    r <= 25 ? "Молодец." : "Остановись, ты не в колл-центре.";
+}
+function showTab(tab) {
+  document.getElementById("todayTab").classList.toggle("hidden", tab !== "today");
+  document.getElementById("analyticsTab").classList.toggle("hidden", tab !== "analytics");
+  document.getElementById("tabToday").classList.toggle("active", tab === "today");
+  document.getElementById("tabAnalytics").classList.toggle("active", tab === "analytics");
+  if (tab === "analytics") updateAnalytics();
+}
+let chart;
+function updateAnalytics() {
+  const ctx = document.getElementById("myChart").getContext("2d");
+  const all = JSON.parse(localStorage.getItem("sf_data") || "{}");
+  const labels = [], calls = [], reached = [];
+  const tbody = document.getElementById("historyTable");
+  tbody.innerHTML = "";
+  Object.keys(all).sort().forEach(date => {
+    const row = all[date];
+    labels.push(date.slice(5));
+    calls.push(row.calls||0);
+    reached.push(row.reached||0);
+    tbody.innerHTML += \`<tr><td>\${date}</td><td>\${row.calls||0}</td><td>\${row.reached||0}</td>
+      <td>\${row.meetings||0}</td><td>\${row.scheduled||0}</td><td>\${row.kpSet||0}</td><td>\${row.kpDone||0}</td></tr>\`;
+  });
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels, datasets: [
+        { label: "Звонки", data: calls, borderColor: "#933DC9", tension: 0.3 },
+        { label: "Дозвоны", data: reached, borderColor: "#26d9f0", tension: 0.3 }
+      ]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+}
 </script>
-
 </body>
 </html>
+
