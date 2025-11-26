@@ -13,7 +13,6 @@
       --accent-dark: #e3b06a;
       --text-main: #ffffff;
       --text-muted: #b4acbf;
-      --radius-card: 16px;
     }
 
     * {
@@ -33,23 +32,23 @@
       padding: 20px;
     }
 
-    /* Общий контейнер */
     .wrapper {
       width: 100%;
       max-width: 1100px;
     }
 
-    /* Экраны */
     .screen {
       display: none;
     }
+
     .screen.active {
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* Карточка входа */
+    /* ЛОГИН */
+
     .login-card {
       background: var(--card-bg);
       padding: 30px 28px 26px;
@@ -119,7 +118,8 @@
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8);
     }
 
-    /* Дашборд и аналитика */
+    /* ДАШБОРД + АНАЛИТИКА */
+
     .dashboard-card {
       background: var(--card-bg);
       border-radius: 24px;
@@ -260,19 +260,15 @@
     }
 
     .footer-note {
-      margin-top: 18px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Блок советов */
-    .advice-box {
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(21, 15, 30, 0.95);
-      border: 1px solid rgba(243, 201, 139, 0.6);
+      margin-top: 22px;
+      padding: 14px 18px;
       font-size: 13px;
+      color: var(--text-main);
+      background: #1f1928;
+      border-radius: 14px;
+      border: 1px solid rgba(243, 201, 139, 0.35);
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
+      line-height: 1.45;
     }
 
     .advice-title {
@@ -285,7 +281,38 @@
       margin-top: 2px;
     }
 
+    /* Подсказка над метриками */
+
+    .metrics-hint {
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #1b1424;
+      border: 1px solid rgba(243, 201, 139, 0.4);
+      font-size: 13px;
+      color: var(--text-main);
+      box-shadow: 0 0 14px rgba(0,0,0,0.45);
+    }
+
+    .metrics-hint-avg {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .metric-input.metric-low {
+      color: #ff6b6b;
+      font-weight: bold;
+    }
+
+    .metric-input.metric-high {
+      color: #4cd964;
+      font-weight: bold;
+    }
+
     /* Аналитика */
+
     .period-tabs {
       display: inline-flex;
       padding: 3px;
@@ -337,7 +364,6 @@
       margin-bottom: 4px;
     }
 
-    /* График */
     .chart-wrapper {
       margin-top: 18px;
       padding: 12px 14px 10px;
@@ -380,6 +406,59 @@
       background: rgba(243, 201, 139, 0.9);
       margin-right: 4px;
     }
+
+    /* Снежинки */
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 14px;
+      opacity: 0.8;
+      pointer-events: none;
+      animation: fall linear infinite;
+      z-index: 999;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(110vh); opacity: 0.3; }
+    }
+
+    /* Аналитика по центру, прямоугольная */
+
+    #analyticsScreen .dashboard-card {
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 16px;
+    }
+
+    #analyticsScreen .analytics-grid {
+      grid-template-columns: 1fr;
+      margin-top: 20px;
+    }
+
+    /* Встроенный виджет подсказок над метриками */
+    #inlineAdvice {
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: none;
+      position: relative;
+      background: #1b1424;
+      border: 1px solid rgba(243,201,139,0.6);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      display: none;
+    }
+
+    #inlineAdviceClose {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -408,6 +487,20 @@
             <div class="user-pill" id="userPill">Пользователь</div>
           </div>
         </header>
+
+        <!-- Встроенный виджет советов -->
+        <div id="inlineAdvice">
+          <div id="inlineAdviceClose">✖</div>
+          <div class="advice-title">Советы по метрикам</div>
+          <div class="advice-line"><strong>Наборы:</strong> <span id="inlineAdviceSets"></span></div>
+          <div class="advice-line"><strong>Активные звонки:</strong> <span id="inlineAdviceCalls"></span></div>
+        </div>
+
+        <div class="metrics-hint">
+          <strong>Подсказка по цветам:</strong>
+          <span>метрики ниже среднего подсвечены красным, выше среднего — зелёным.</span>
+          <span class="metrics-hint-avg">Текущее среднее значение: <span id="metricsAvg">0.0</span></span>
+        </div>
 
         <div class="metrics-grid">
           <div class="metric-card">
@@ -465,13 +558,9 @@
           </div>
         </div>
 
-        <div class="advice-box" id="adviceBox">
-          <div class="advice-title">Советы по текущим метрикам</div>
-          <div class="advice-line"><strong>Наборы:</strong> <span id="adviceSets"></span></div>
-          <div class="advice-line"><strong>Активные звонки:</strong> <span id="adviceCalls"></span></div>
-        </div>
-
-        <p class="footer-note">Подсказка: метрики можно настроить под свои этапы воронки. Значения сохраняются до перезагрузки страницы.</p>
+        <p class="footer-note">
+          Подсказка: метрики можно настроить под свои этапы воронки. Значения сохраняются до перезагрузки страницы.
+        </p>
       </div>
     </section>
 
@@ -565,11 +654,14 @@
 
     const metricSets = document.getElementById('metricSets');
     const metricCalls = document.getElementById('metricCalls');
-    const adviceBox = document.getElementById('adviceBox');
-    const adviceSets = document.getElementById('adviceSets');
-    const adviceCalls = document.getElementById('adviceCalls');
-
     const metricInputs = document.querySelectorAll('.metric-input');
+
+    const inlineAdvice = document.getElementById('inlineAdvice');
+    const inlineAdviceClose = document.getElementById('inlineAdviceClose');
+    const inlineAdviceSets = document.getElementById('inlineAdviceSets');
+    const inlineAdviceCalls = document.getElementById('inlineAdviceCalls');
+
+    const adviceSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_7f6a64e8c1.mp3?filename=notification-113724.mp3');
 
     const anSets = document.getElementById('anSets');
     const anCalls = document.getElementById('anCalls');
@@ -591,7 +683,7 @@
     let currentPeriod = 'day';
     let currentUserName = '';
     const STORAGE_KEY = 'salesMetricsDemo';
-const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzLfNCuXRKjC7Wnx68KoDefflX81HuQD4HdxOhwx6Mb8LEm/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzLfNCuXRKjC7Wnx68KoDefflX81HuQD4HdxOhwx6Mb8LEm/exec';
 
     // Вход
     loginButton.addEventListener('click', () => {
@@ -604,14 +696,15 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
       currentUserName = name;
       userPill.textContent = `Здравствуйте, ${name}`;
       userPillAnalytics.textContent = `Здравствуйте, ${name}`;
+
       loginScreen.classList.remove('active');
       dashboardScreen.classList.add('active');
+
       updateAdvice();
       updateAnalytics();
-      autoSaveToSheet();
     });
 
-    // Переходы между экранами
+    // Переключение экранов
     analyticsButton.addEventListener('click', () => {
       dashboardScreen.classList.remove('active');
       analyticsScreen.classList.add('active');
@@ -623,7 +716,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
       dashboardScreen.classList.add('active');
     });
 
-    // Инкремент/декремент для всех метрик
+    // Обработчики +/- и ручного ввода
     document.querySelectorAll('.metric-card').forEach(card => {
       const input = card.querySelector('.metric-input');
       const buttons = card.querySelectorAll('.metric-btn');
@@ -651,43 +744,35 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
       });
     });
 
-    // Логика советов по метрикам
+    // Подсказки по метрикам (встроенный виджет)
     function updateAdvice() {
       const sets = parseInt(metricSets.value || '0', 10);
       const calls = parseInt(metricCalls.value || '0', 10);
 
-      let setsMsg = '';
-      if (sets <= 20) {
-        setsMsg = 'Ты вообще работать собираешься';
-      } else if (sets <= 40) {
-        setsMsg = 'Ну неплохо, черт';
-      } else if (sets <= 60) {
-        setsMsg = 'А ты че-то можешь';
-      } else if (sets <= 80) {
-        setsMsg = 'Молодец, парашник';
-      } else {
-        setsMsg = 'Отберите у него телефон';
-      }
+      const setsMsg =
+        sets <= 20 ? 'Ты вообще работать собираешься' :
+        sets <= 40 ? 'Ну неплохо, черт' :
+        sets <= 60 ? 'А ты че-то можешь' :
+        sets <= 80 ? 'Молодец, парашник' :
+                     'Отберите у него телефон';
 
-      let callsMsg = '';
-      if (calls <= 5) {
-        callsMsg = 'Ты зачем в офис приехал?';
-      } else if (calls <= 10) {
-        callsMsg = 'Ты там точно работаешь?';
-      } else if (calls <= 15) {
-        callsMsg = 'Неплохо, парашник';
-      } else if (calls <= 20) {
-        callsMsg = 'Давай, поднажми';
-      } else if (calls <= 25) {
-        callsMsg = 'Молодец';
-      } else {
-        callsMsg = 'Остановись, ты не в колл-центре';
-      }
+      const callsMsg =
+        calls <= 5  ? 'Ты зачем в офис приехал?' :
+        calls <= 10 ? 'Ты там точно работаешь?' :
+        calls <= 15 ? 'Неплохо, парашник' :
+        calls <= 20 ? 'Давай, поднажми' :
+        calls <= 25 ? 'Молодец' :
+                      'Остановись, ты не в колл-центре';
 
-      adviceSets.textContent = setsMsg;
-      adviceCalls.textContent = callsMsg;
-      adviceBox.style.display = 'block';
+      inlineAdviceSets.textContent = setsMsg;
+      inlineAdviceCalls.textContent = callsMsg;
+      inlineAdvice.style.display = 'block';
+      adviceSound.play().catch(() => {});
     }
+
+    inlineAdviceClose.addEventListener('click', () => {
+      inlineAdvice.style.display = 'none';
+    });
 
     // Аналитика
     periodButtons.forEach(btn => {
@@ -740,6 +825,24 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
       const kp = parseInt(metricInputs[4].value || '0', 10);
       const deals = parseInt(metricInputs[5].value || '0', 10);
 
+      const rawValues = [sets, calls, meetPlan, meetDone, kp, deals];
+      const avg = rawValues.reduce((sum, v) => sum + v, 0) / (rawValues.length || 1);
+      const avgElement = document.getElementById('metricsAvg');
+      if (avgElement && !isNaN(avg)) {
+        avgElement.textContent = avg.toFixed(1);
+      }
+
+      rawValues.forEach((value, index) => {
+        const input = metricInputs[index];
+        if (!input) return;
+        input.classList.remove('metric-low', 'metric-high');
+        if (value < avg) {
+          input.classList.add('metric-low');
+        } else if (value > avg) {
+          input.classList.add('metric-high');
+        }
+      });
+
       let multiplier = 1;
       if (currentPeriod === 'week') multiplier = 5;
       else if (currentPeriod === 'month') multiplier = 20;
@@ -781,6 +884,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
           console.error('Не удалось сохранить данные', e);
         }
       }
+
+      autoSaveToSheet();
     }
 
     function updateChart(values) {
@@ -823,7 +928,22 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzL
     }
 
     restoreFromStorage();
+
+    // СНЕГ
+    function createSnowflake() {
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      flake.textContent = '❄';
+      flake.style.left = Math.random() * 100 + 'vw';
+      flake.style.animationDuration = (4 + Math.random() * 6) + 's';
+      flake.style.fontSize = (10 + Math.random() * 10) + 'px';
+      document.body.appendChild(flake);
+      setTimeout(() => flake.remove(), 10000);
+    }
+
+    setInterval(createSnowflake, 200);
   </script>
 </body>
 </html>
+
 
