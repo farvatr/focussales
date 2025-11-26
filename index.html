@@ -2,203 +2,828 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Sales Focus</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Личный кабинет – метрики и аналитика</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    body { background: #1b002d; color: white; font-family: sans-serif; padding: 1rem; }
-    .tabs button.active { background: #4b0082; }
-    .tabs button { background: #31114d; color: white; padding: 8px 12px; margin-right: 5px; border-radius: 5px; border: none; cursor: pointer; }
-    .tabs { margin-bottom: 1rem; }
-    input, button, select {
-      padding: 6px; font-size: 16px; border-radius: 5px; border: none; margin: 5px;
+    :root {
+      --bg-main: #141018;
+      --card-bg: #1f1928;
+      --accent: #f3c98b;
+      --accent-dark: #e3b06a;
+      --text-main: #ffffff;
+      --text-muted: #b4acbf;
+      --radius-card: 16px;
     }
-    input[type="number"] {
-      width: 60px; background: #31114d; color: white; text-align: center;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
-    button { background: #933DC9; color: white; }
-    .card { background: #2e004d; padding: 1rem; margin: 1rem 0; border-radius: 10px; }
-    .metric-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-    .hidden { display: none; }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 10px;
+
+    body {
+      background: radial-gradient(circle at 10% 0%, #2b2237 0, #141018 40%, #050307 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
-    th, td {
-      border: 1px solid #555; padding: 6px; text-align: center;
+
+    /* Общий контейнер */
+    .wrapper {
+      width: 100%;
+      max-width: 1100px;
     }
-    th { background: #31114d; }
-    #loginModal {
-      position: fixed; top:0;left:0;right:0;bottom:0;
-      background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center;
-      z-index: 1000;
+
+    /* Экраны */
+    .screen {
+      display: none;
     }
-    #loginModal input { width: 200px; font-size: 18px; padding: 10px; }
-    #loginModal button { font-size: 18px; padding: 10px 20px; }
+    .screen.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Карточка входа */
+    .login-card {
+      background: var(--card-bg);
+      padding: 30px 28px 26px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .login-card h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .login-label {
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #30263f;
+      background: #1a1324;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .login-input::placeholder {
+      color: #7a6d94;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(243, 201, 139, 0.5);
+    }
+
+    .login-button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 11px 10px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #2c1f0f;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+    }
+
+    .login-button:hover {
+      filter: brightness(1.03);
+      transform: translateY(-1px);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Дашборд и аналитика */
+    .dashboard-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 24px 24px 20px;
+      width: 100%;
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.75);
+    }
+
+    .dashboard-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .dashboard-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+    }
+
+    .analytics-btn,
+    .back-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .analytics-btn:hover,
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: #1b1424;
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      min-height: 32px;
+    }
+
+    .metric-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-input {
+      flex: 1;
+      padding: 8px 8px;
+      border-radius: 10px;
+      border: 1px solid #32263e;
+      background: #150f1e;
+      color: var(--text-main);
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .metric-input::-webkit-outer-spin-button,
+    .metric-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .metric-input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .metric-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--accent);
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .metric-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .metric-btn:active {
+      transform: translateY(1px);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Блок советов */
+    .advice-box {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(21, 15, 30, 0.95);
+      border: 1px solid rgba(243, 201, 139, 0.6);
+      font-size: 13px;
+    }
+
+    .advice-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .advice-line {
+      margin-top: 2px;
+    }
+
+    /* Аналитика */
+    .period-tabs {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.35);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .period-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .period-btn.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+    }
+
+    .analytics-body {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .analytics-card {
+      background: #1b1424;
+      border-radius: 16px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+    }
+
+    .analytics-value {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    /* График */
+    .chart-wrapper {
+      margin-top: 18px;
+      padding: 12px 14px 10px;
+      border-radius: 18px;
+      background: #1b1424;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .chart-title {
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    #metricsChart {
+      width: 100%;
+      height: 170px;
+      display: block;
+    }
+
+    .chart-bar {
+      fill: rgba(243, 201, 139, 0.9);
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chart-legend span::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(243, 201, 139, 0.9);
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
-<div id="loginModal">
-  <div>
-    <h2>Введите имя</h2>
-    <input id="username" type="text" placeholder="Ваше имя" />
-    <button id="loginBtn">Войти</button>
+  <div class="wrapper">
+    <!-- Экран входа -->
+    <section class="screen active" id="loginScreen">
+      <div class="login-card">
+        <h2>Вход в личный кабинет</h2>
+        <p class="login-subtitle">Введите своё имя, чтобы перейти к управлению метриками продаж.</p>
+        <label class="login-label" for="loginName">Имя</label>
+        <input id="loginName" class="login-input" type="text" placeholder="Например, Антон" />
+        <button class="login-button" id="loginButton">Войти</button>
+      </div>
+    </section>
+
+    <!-- Экран дашборда -->
+    <section class="screen" id="dashboardScreen">
+      <div class="dashboard-card">
+        <header class="dashboard-header">
+          <div>
+            <div class="dashboard-title">Воронка продаж</div>
+            <div class="dashboard-subtitle">Управляйте ключевыми метриками: от звонка до оплаты.</div>
+          </div>
+          <div class="header-actions">
+            <button class="analytics-btn" id="analyticsButton">Аналитика</button>
+            <div class="user-pill" id="userPill">Пользователь</div>
+          </div>
+        </header>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Количество наборов</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" id="metricSets" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Активные звонки</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" id="metricCalls" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Назначено встреч</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Проведено встреч</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Отправлено КП</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Получено оплат</div>
+            <div class="metric-controls">
+              <button class="metric-btn" data-action="dec">-</button>
+              <input type="number" class="metric-input" value="0" min="0" />
+              <button class="metric-btn" data-action="inc">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="advice-box" id="adviceBox">
+          <div class="advice-title">Советы по текущим метрикам</div>
+          <div class="advice-line"><strong>Наборы:</strong> <span id="adviceSets"></span></div>
+          <div class="advice-line"><strong>Активные звонки:</strong> <span id="adviceCalls"></span></div>
+        </div>
+
+        <p class="footer-note">Подсказка: метрики можно настроить под свои этапы воронки. Значения сохраняются до перезагрузки страницы.</p>
+      </div>
+    </section>
+
+    <!-- Экран аналитики -->
+    <section class="screen" id="analyticsScreen">
+      <div class="dashboard-card">
+        <header class="dashboard-header">
+          <div>
+            <div class="dashboard-title">Аналитика</div>
+            <div class="dashboard-subtitle">Сводные данные по дням, неделям и месяцам.</div>
+          </div>
+          <div class="header-actions">
+            <button class="back-btn" id="backToMetrics">К метрикам</button>
+            <div class="user-pill" id="userPillAnalytics">Пользователь</div>
+          </div>
+        </header>
+
+        <div class="period-tabs">
+          <button class="period-btn active" data-period="day">День</button>
+          <button class="period-btn" data-period="week">Неделя</button>
+          <button class="period-btn" data-period="month">Месяц</button>
+        </div>
+
+        <div class="analytics-body">
+          <div id="analyticsSummary">
+            Сегодняшние результаты основаны на текущих значениях метрик.
+          </div>
+
+          <div class="analytics-grid" id="analyticsGrid">
+            <div class="analytics-card">
+              <div class="analytics-value" id="anSets">0</div>
+              Количество наборов за период
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="anCalls">0</div>
+              Активных звонков за период
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="anMeetPlan">0</div>
+              Назначено встреч за период
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="anMeetDone">0</div>
+              Проведено встреч за период
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="anKP">0</div>
+              Отправлено КП за период
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-value" id="anDeals">0</div>
+              Получено оплат за период
+            </div>
+          </div>
+
+          <div class="chart-wrapper">
+            <div class="chart-title">График по всем метрикам за период</div>
+            <svg id="metricsChart" viewBox="0 0 320 160" preserveAspectRatio="none">
+              <line x1="0" y1="140" x2="320" y2="140" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+              <rect id="barSets" class="chart-bar" x="20"  y="140" width="24" height="0" rx="4" />
+              <rect id="barCalls" class="chart-bar" x="70"  y="140" width="24" height="0" rx="4" />
+              <rect id="barMeetPlan" class="chart-bar" x="120" y="140" width="24" height="0" rx="4" />
+              <rect id="barMeetDone" class="chart-bar" x="170" y="140" width="24" height="0" rx="4" />
+              <rect id="barKP" class="chart-bar" x="220" y="140" width="24" height="0" rx="4" />
+              <rect id="barDeals" class="chart-bar" x="270" y="140" width="24" height="0" rx="4" />
+            </svg>
+            <div class="chart-legend">
+              <span>Наборы</span>
+              <span>Активные звонки</span>
+              <span>Назначено встреч</span>
+              <span>Проведено встреч</span>
+              <span>Отправлено КП</span>
+              <span>Получено оплат</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-</div>
 
-<h2>Добро пожаловать, <span id="userWelcome"></span></h2>
-<div class="tabs">
-  <button onclick="showTab('today')" id="tabToday" class="active">Сегодня</button>
-  <button onclick="showTab('analytics')" id="tabAnalytics">Аналитика</button>
-</div>
+  <script>
+    const loginButton = document.getElementById('loginButton');
+    const loginNameInput = document.getElementById('loginName');
+    const loginScreen = document.getElementById('loginScreen');
+    const dashboardScreen = document.getElementById('dashboardScreen');
+    const analyticsScreen = document.getElementById('analyticsScreen');
+    const userPill = document.getElementById('userPill');
+    const userPillAnalytics = document.getElementById('userPillAnalytics');
+    const analyticsButton = document.getElementById('analyticsButton');
+    const backToMetrics = document.getElementById('backToMetrics');
 
-<div id="todayTab">
-  <div class="card" id="metrics"></div>
-  <div class="card">
-    <h3>Советы</h3>
-    <p><strong>Звонки:</strong> <span id="adviceMain">–</span></p>
-    <p><strong>Дозвоны:</strong> <span id="adviceExtra">–</span></p>
-  </div>
-</div>
+    const metricSets = document.getElementById('metricSets');
+    const metricCalls = document.getElementById('metricCalls');
+    const adviceBox = document.getElementById('adviceBox');
+    const adviceSets = document.getElementById('adviceSets');
+    const adviceCalls = document.getElementById('adviceCalls');
 
-<div id="analyticsTab" class="hidden">
-  <div class="card">
-    <label for="rangeSelect">Период:</label>
-    <select id="rangeSelect">
-      <option value="day">День</option>
-      <option value="week">Неделя</option>
-      <option value="month">Месяц</option>
-    </select>
-    <canvas id="myChart" height="100"></canvas>
-    <table>
-      <thead>
-        <tr><th>Дата</th><th>Звонки</th><th>Дозвоны</th><th>Встречи</th>
-        <th>Назначено</th><th>КП Назначено</th><th>КП Проведено</th></tr>
-      </thead>
-      <tbody id="historyTable"></tbody>
-    </table>
-  </div>
-</div>
+    const metricInputs = document.querySelectorAll('.metric-input');
 
-<script>
-window.onload = () => {
-  const metrics = ["calls","reached","meetings","scheduled","kpSet","kpDone"];
-  const labels = {
-    calls:"Звонки", reached:"Дозвоны", meetings:"Встречи",
-    scheduled:"Назначено встреч", kpSet:"КП Назначено", kpDone:"КП Проведено"
-  };
-  const today = new Date().toISOString().split("T")[0];
-  let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
-  if (!data[today]) data[today] = Object.fromEntries(metrics.map(k => [k,0]));
+    const anSets = document.getElementById('anSets');
+    const anCalls = document.getElementById('anCalls');
+    const anMeetPlan = document.getElementById('anMeetPlan');
+    const anMeetDone = document.getElementById('anMeetDone');
+    const anKP = document.getElementById('anKP');
+    const anDeals = document.getElementById('anDeals');
 
-  const el = document.getElementById("metrics");
-  const loginModal = document.getElementById("loginModal");
-  const welcome = document.getElementById("userWelcome");
+    const barSets = document.getElementById('barSets');
+    const barCalls = document.getElementById('barCalls');
+    const barMeetPlan = document.getElementById('barMeetPlan');
+    const barMeetDone = document.getElementById('barMeetDone');
+    const barKP = document.getElementById('barKP');
+    const barDeals = document.getElementById('barDeals');
 
-  function renderMetrics() {
-    el.innerHTML = "";
-    metrics.forEach(key => {
-      const val = data[today][key] || 0;
-      el.innerHTML += \`
-        <div class="metric-row">
-          <label>\${labels[key]}</label>
-          <button onclick="adjust('\${key}',-1)">–</button>
-          <input id="\${key}Input" value="\${val}" type="number">
-          <button onclick="adjust('\${key}',1)">+</button>
-          <button onclick="saveMetric('\${key}')">Ввод</button>
-        </div>\`;
+    const periodButtons = document.querySelectorAll('.period-btn');
+    const analyticsSummary = document.getElementById('analyticsSummary');
+
+    let currentPeriod = 'day';
+    let currentUserName = '';
+    const STORAGE_KEY = 'salesMetricsDemo';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzvT0NJH3um4zrzKTTDBjzLfNCuXRKjC7Wnx68KoDefflX81HuQD4HdxOhwx6Mb8LEm/exec';
+
+    // Вход
+    loginButton.addEventListener('click', () => {
+      const name = loginNameInput.value.trim();
+      if (!name) {
+        loginNameInput.focus();
+        return;
+      }
+
+      currentUserName = name;
+      userPill.textContent = `Здравствуйте, ${name}`;
+      userPillAnalytics.textContent = `Здравствуйте, ${name}`;
+      loginScreen.classList.remove('active');
+      dashboardScreen.classList.add('active');
+      updateAdvice();
+      updateAnalytics();
+      autoSaveToSheet();
     });
-  }
 
-  window.adjust = function(key, d) {
-    const el = document.getElementById(key+"Input");
-    el.value = Math.max(0, parseInt(el.value||'0') + d);
-  };
-
-  window.saveMetric = function(key) {
-    const val = parseInt(document.getElementById(key+"Input").value)||0;
-    data[today][key] = val;
-    localStorage.setItem("sf_data", JSON.stringify(data));
-    updateAdvice(); updateAnalytics();
-  };
-
-  function updateAdvice() {
-    const c = data[today].calls || 0;
-    const r = data[today].reached || 0;
-    document.getElementById("adviceMain").textContent =
-      c <= 20 ? "Ты вообще работать собираешься?" :
-      c <= 40 ? "Ну неплохо, чёрт." :
-      c <= 60 ? "А ты что-то можешь." :
-      c <= 80 ? "Молодец, парашник." : "Отберите у него телефон!";
-    document.getElementById("adviceExtra").textContent =
-      r <= 5 ? "Ты зачем в офис приехал?" :
-      r <= 10 ? "Ты там точно работаешь?" :
-      r <= 15 ? "Неплохо, парашник." :
-      r <= 20 ? "Давай, поднажми." :
-      r <= 25 ? "Молодец." : "Остановись, ты не в колл-центре.";
-  }
-
-  window.showTab = function(tab) {
-    document.getElementById("todayTab").classList.toggle("hidden", tab !== "today");
-    document.getElementById("analyticsTab").classList.toggle("hidden", tab !== "analytics");
-    document.getElementById("tabToday").classList.toggle("active", tab === "today");
-    document.getElementById("tabAnalytics").classList.toggle("active", tab === "analytics");
-    if (tab === "analytics") updateAnalytics();
-  };
-
-  let chart;
-  function updateAnalytics() {
-    const ctx = document.getElementById("myChart").getContext("2d");
-    const all = JSON.parse(localStorage.getItem("sf_data") || "{}");
-    const labels = [], calls = [], reached = [];
-    const tbody = document.getElementById("historyTable");
-    tbody.innerHTML = "";
-    Object.keys(all).sort().forEach(date => {
-      const row = all[date];
-      labels.push(date.slice(5));
-      calls.push(row.calls||0);
-      reached.push(row.reached||0);
-      tbody.innerHTML += \`<tr><td>\${date}</td><td>\${row.calls||0}</td><td>\${row.reached||0}</td>
-        <td>\${row.meetings||0}</td><td>\${row.scheduled||0}</td><td>\${row.kpSet||0}</td><td>\${row.kpDone||0}</td></tr>\`;
+    // Переходы между экранами
+    analyticsButton.addEventListener('click', () => {
+      dashboardScreen.classList.remove('active');
+      analyticsScreen.classList.add('active');
+      updateAnalytics();
     });
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels, datasets: [
-          { label: "Звонки", data: calls, borderColor: "#933DC9", tension: 0.3 },
-          { label: "Дозвоны", data: reached, borderColor: "#26d9f0", tension: 0.3 }
-        ]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+
+    backToMetrics.addEventListener('click', () => {
+      analyticsScreen.classList.remove('active');
+      dashboardScreen.classList.add('active');
     });
-  }
 
-  // Авторизация
-  const usernameInput = document.getElementById("username");
-  const loginBtn = document.getElementById("loginBtn");
+    // Инкремент/декремент для всех метрик
+    document.querySelectorAll('.metric-card').forEach(card => {
+      const input = card.querySelector('.metric-input');
+      const buttons = card.querySelectorAll('.metric-btn');
 
-  function saveUsername() {
-    const name = usernameInput.value.trim();
-    if (name) {
-      localStorage.setItem("sf_username", name);
-      loginModal.style.display = "none";
-      welcome.textContent = name;
-      renderMetrics(); updateAdvice(); updateAnalytics();
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          let value = parseInt(input.value || '0', 10);
+          if (btn.dataset.action === 'inc') {
+            value += 1;
+          } else {
+            value = Math.max(0, value - 1);
+          }
+          input.value = value;
+          updateAdvice();
+          updateAnalytics();
+        });
+      });
+
+      input.addEventListener('input', () => {
+        let v = parseInt(input.value || '0', 10);
+        if (isNaN(v) || v < 0) v = 0;
+        input.value = v;
+        updateAdvice();
+        updateAnalytics();
+      });
+    });
+
+    // Логика советов по метрикам
+    function updateAdvice() {
+      const sets = parseInt(metricSets.value || '0', 10);
+      const calls = parseInt(metricCalls.value || '0', 10);
+
+      let setsMsg = '';
+      if (sets <= 20) {
+        setsMsg = 'Ты вообще работать собираешься';
+      } else if (sets <= 40) {
+        setsMsg = 'Ну неплохо, черт';
+      } else if (sets <= 60) {
+        setsMsg = 'А ты че-то можешь';
+      } else if (sets <= 80) {
+        setsMsg = 'Молодец, парашник';
+      } else {
+        setsMsg = 'Отберите у него телефон';
+      }
+
+      let callsMsg = '';
+      if (calls <= 5) {
+        callsMsg = 'Ты зачем в офис приехал?';
+      } else if (calls <= 10) {
+        callsMsg = 'Ты там точно работаешь?';
+      } else if (calls <= 15) {
+        callsMsg = 'Неплохо, парашник';
+      } else if (calls <= 20) {
+        callsMsg = 'Давай, поднажми';
+      } else if (calls <= 25) {
+        callsMsg = 'Молодец';
+      } else {
+        callsMsg = 'Остановись, ты не в колл-центре';
+      }
+
+      adviceSets.textContent = setsMsg;
+      adviceCalls.textContent = callsMsg;
+      adviceBox.style.display = 'block';
     }
-  }
 
-  usernameInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") saveUsername();
-  });
-  loginBtn.addEventListener("click", saveUsername);
+    // Аналитика
+    periodButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        periodButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
-  const saved = localStorage.getItem("sf_username");
-  if (saved) {
-    loginModal.style.display = "none";
-    welcome.textContent = saved;
-    renderMetrics(); updateAdvice(); updateAnalytics();
-  }
-};
-</script>
+        currentPeriod = btn.dataset.period;
+
+        if (currentPeriod === 'day') {
+          analyticsSummary.textContent = 'Сегодняшние результаты основаны на текущих значениях метрик.';
+        } else if (currentPeriod === 'week') {
+          analyticsSummary.textContent = 'Неделя: текущие метрики умножены примерно на 5 рабочих дней.';
+        } else {
+          analyticsSummary.textContent = 'Месяц: текущие метрики умножены примерно на 20 рабочих дней.';
+        }
+
+        updateAnalytics();
+      });
+    });
+
+    async function autoSaveToSheet() {
+      if (!currentUserName) return;
+      const sets = parseInt(metricInputs[0].value || '0', 10);
+      const calls = parseInt(metricInputs[1].value || '0', 10);
+      const meetPlan = parseInt(metricInputs[2].value || '0', 10);
+      const meetDone = parseInt(metricInputs[3].value || '0', 10);
+      const kp = parseInt(metricInputs[4].value || '0', 10);
+      const deals = parseInt(metricInputs[5].value || '0', 10);
+
+      const payload = { user: currentUserName, sets, calls, meetPlan, meetDone, kp, deals };
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.error('Ошибка Google API', e);
+      }
+    }
+
+    function updateAnalytics() {
+      const sets = parseInt(metricInputs[0].value || '0', 10);
+      const calls = parseInt(metricInputs[1].value || '0', 10);
+      const meetPlan = parseInt(metricInputs[2].value || '0', 10);
+      const meetDone = parseInt(metricInputs[3].value || '0', 10);
+      const kp = parseInt(metricInputs[4].value || '0', 10);
+      const deals = parseInt(metricInputs[5].value || '0', 10);
+
+      let multiplier = 1;
+      if (currentPeriod === 'week') multiplier = 5;
+      else if (currentPeriod === 'month') multiplier = 20;
+
+      const vals = {
+        sets: sets * multiplier,
+        calls: calls * multiplier,
+        meetPlan: meetPlan * multiplier,
+        meetDone: meetDone * multiplier,
+        kp: kp * multiplier,
+        deals: deals * multiplier
+      };
+
+      anSets.textContent = vals.sets;
+      anCalls.textContent = vals.calls;
+      anMeetPlan.textContent = vals.meetPlan;
+      anMeetDone.textContent = vals.meetDone;
+      anKP.textContent = vals.kp;
+      anDeals.textContent = vals.deals;
+
+      updateChart([
+        vals.sets,
+        vals.calls,
+        vals.meetPlan,
+        vals.meetDone,
+        vals.kp,
+        vals.deals
+      ]);
+
+      if (currentUserName) {
+        const data = {
+          user: currentUserName,
+          metrics: { sets, calls, meetPlan, meetDone, kp, deals },
+          updatedAt: new Date().toISOString()
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.error('Не удалось сохранить данные', e);
+        }
+      }
+    }
+
+    function updateChart(values) {
+      const max = Math.max(...values, 1);
+      const chartHeight = 110;
+      const baseY = 140;
+      const bars = [barSets, barCalls, barMeetPlan, barMeetDone, barKP, barDeals];
+
+      values.forEach((v, i) => {
+        const h = (v / max) * chartHeight;
+        const y = baseY - h;
+        const bar = bars[i];
+        bar.setAttribute('height', h);
+        bar.setAttribute('y', y);
+      });
+    }
+
+    function restoreFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.user) {
+          loginNameInput.value = data.user;
+          currentUserName = data.user;
+        }
+        if (data.metrics) {
+          metricInputs[0].value = data.metrics.sets ?? 0;
+          metricInputs[1].value = data.metrics.calls ?? 0;
+          metricInputs[2].value = data.metrics.meetPlan ?? 0;
+          metricInputs[3].value = data.metrics.meetDone ?? 0;
+          metricInputs[4].value = data.metrics.kp ?? 0;
+          metricInputs[5].value = data.metrics.deals ?? 0;
+        }
+        updateAdvice();
+        updateAnalytics();
+      } catch (e) {
+        console.error('Ошибка восстановления данных', e);
+      }
+    }
+
+    restoreFromStorage();
+  </script>
 </body>
 </html>
+
