@@ -141,15 +141,18 @@ const labels = {
 };
 let data = JSON.parse(localStorage.getItem("sf_data") || "{}");
 if (!data[today]) data[today] = Object.fromEntries(metrics.map(k => [k,0]));
-
 function saveUsername() {
   const name = document.getElementById("username").value.trim();
   if (name) {
     localStorage.setItem("sf_username", name);
     document.getElementById("loginModal").style.display = "none";
     document.getElementById("userWelcome").textContent = name;
+    renderMetrics();
+    updateAdvice();
+    updateAnalytics();
   }
 }
+
 window.onload = () => {
   const name = localStorage.getItem("sf_username");
   if (name) {
